@@ -7,6 +7,9 @@ using System.Reflection;
 
 namespace SpaceOverflow.Effects
 {
+    /// <summary>
+    /// Represents an Animation on a field or property of an object. Can be executed with an Animator.
+    /// </summary>
     public class Animation
     {
         public Animation(object targetObject, string targetPropertyName, object to) 
@@ -21,7 +24,7 @@ namespace SpaceOverflow.Effects
         public Animation(object targetObject, string targetPropertyName, object from, object to, TimeSpan duration, Interpolator interpolator) {
             this.TargetObject = targetObject;
             this.TargetPropertyName = targetPropertyName;
-            this.TargetProperty = new PropertyInstanceDescriptor(targetObject, targetPropertyName);
+            this.TargetProperty = new PropertyOrFieldInstanceDescriptor(targetObject, targetPropertyName);
             this.From = from;
             this.To = to;
             this.Duration = duration;
@@ -39,7 +42,7 @@ namespace SpaceOverflow.Effects
 
         protected TimeSpan StartTime { get; set; }
         protected object ActualFrom { get; set; }
-        protected PropertyInstanceDescriptor TargetProperty { get; set; }
+        protected PropertyOrFieldInstanceDescriptor TargetProperty { get; set; }
 
         public void Update(GameTime gameTime) {
             if (this.State != AnimationState.Animating) { //Begin animation
@@ -73,5 +76,9 @@ namespace SpaceOverflow.Effects
         Finished
     }
 
+    /// <param name="from">The start value.</param>
+    /// <param name="to">The end value.</param>
+    /// <param name="progress">The progress, ranging from 0 to 1.</param>
+    /// <returns>The interpolated value.</returns>
     public delegate object Interpolator(object from, object to, float progress);
 }

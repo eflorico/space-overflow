@@ -8,6 +8,9 @@ using Microsoft.Xna.Framework.Input;
 
 namespace SpaceOverflow.Effects
 {
+    /// <summary>
+    /// Updates Animations based on an XNA GameTime.
+    /// </summary>
     public class Animator
     {
         public Animator() {

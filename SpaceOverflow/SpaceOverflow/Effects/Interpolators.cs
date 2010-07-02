@@ -6,6 +6,9 @@ using Microsoft.Xna.Framework;
 
 namespace SpaceOverflow.Effects
 {
+    /// <summary>
+    /// Provides a set of Interpolators that can be used in an Animation.
+    /// </summary>
     public class Interpolators
     {
         public static Interpolator Linear {
@@ -55,6 +58,10 @@ namespace SpaceOverflow.Effects
 
         protected delegate double NumericInterpolator(double from, double to, float progress);
 
+        /// <summary>
+        /// Allows interpolation of int, float, double and Vector3.
+        /// </summary>
+        /// <returns></returns>
         protected static object InterpolateNumeric(object fromObj, object toObj, float progress, NumericInterpolator interpolator) {
             if (fromObj.GetType() != toObj.GetType())
                 throw new ArgumentException("From and to parameters must be the same type!");

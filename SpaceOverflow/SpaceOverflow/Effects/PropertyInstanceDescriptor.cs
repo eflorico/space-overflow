@@ -6,9 +6,14 @@ using System.Reflection;
 
 namespace SpaceOverflow.Effects
 {
-    public class PropertyInstanceDescriptor
+    /// <summary>
+    /// Represents a property or field described by a property path and tied to an instance of its owner.
+    /// </summary>
+    public class PropertyOrFieldInstanceDescriptor
     {
-        public PropertyInstanceDescriptor(object owner, string path) {
+        /// <param name="owner">The instance of the property/field owner.</param>
+        /// <param name="path">The path to the property or field - e.g. MyProperty.MyField.MyValue</param>
+        public PropertyOrFieldInstanceDescriptor(object owner, string path) {
             this.Owner = owner;
             this.Path = path;
 
@@ -45,6 +50,9 @@ namespace SpaceOverflow.Effects
             }
         }
 
+        /// <summary>
+        /// Gets or sets the value of the described property.
+        /// </summary>
         public object Value {
             get {
                 return this.Steps.Last().GetValue(this.Owners.Last());
@@ -65,8 +73,19 @@ namespace SpaceOverflow.Effects
         public object Owner { get; protected set; }
         public string Path { get; protected set; }
 
+        /// <summary>
+        /// List of owner/value objects in the property/value chain.
+        /// </summary>
         protected List<object> Owners { get; private set; }
+
+        /// <summary>
+        /// List of properties or field of the owners that can be found at the same index.
+        /// </summary>
         protected List<PropertyOrFieldDescriptor> Steps { get; private set; }
+
+        /// <summary>
+        /// Indices of owners that are value types. Those have to be copied when the value is updated.
+        /// </summary>
         protected List<int> CopyPoints { get; private set; }
     }
 }
