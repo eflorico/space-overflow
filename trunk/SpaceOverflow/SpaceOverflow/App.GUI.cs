@@ -108,7 +108,7 @@ namespace SpaceOverflow
 
             //Search picker items
             this.ByActivityButton = new Button() { Text = "User's activity" };
-            this.SearchPicker.AddItem(this.ByActivityButton);
+            //this.SearchPicker.AddItem(this.ByActivityButton);
 
             this.ByAuthorButton = new Button() { Text = "By author" };
             this.SearchPicker.AddItem(this.ByAuthorButton);
@@ -205,9 +205,6 @@ namespace SpaceOverflow
             //Event handlers
             this.SearchBox.KeyPressed += new KeyEventHandler((sender, e) => {
                 if (e.KeyCode == Microsoft.Xna.Framework.Input.Keys.Enter && this.SearchBox.Text != "") this.Repopulate();
-            });
-            this.SearchBox.LostFocus += new EventHandler((sender, e) => {
-                if (this.SearchBox.Text != "") this.Repopulate();
             });
             this.SearchPicker.SelectedItemChanged += new EventHandler<SelectedChildChangedEventArgs>((sender, e) => {
                 if (this.SearchBox.Text != "") this.Repopulate();

@@ -14,28 +14,25 @@ namespace SpaceOverflow
         protected void Repopulate() {
             this.Implode();
 
-            if (this.LoadingThread != null) this.LoadingThread.Abort();
-
-            this.LoadingThread = new Thread(new ThreadStart(() => {
-                try {
-                    var questions = this.LoadQuestions(1);
+            try 
+            {
+                this.BeginLoadQuestions(1, new Action<DataResponse<Question>>(response => {
                     lock (this.Questions) this.Questions.Clear();
-                    this.Populate(questions);
+                    this.Populate(response.Items);
                     this.Explode();
-                }
-                catch (Exception ex) {
-                    //TODO: Add exception handling
-                }
-            }));
-
-            this.LoadingThread.Start();
+                }));
+                
+            }
+            catch (Exception ex) {
+                //todo: add exception handling
+            }
         }
 
         protected void ExpandPopulation() {
 
         }
 
-        protected IEnumerable<Question> LoadQuestions(int page)
+        protected void BeginLoadQuestions(int page, Action<DataResponse<Question>> callback)
         {
             StackAPI api = null;
 
@@ -45,7 +42,10 @@ namespace SpaceOverflow
             else if (this.SourceButton.SelectedItem == this.MetaButton) api = StackAPI.Meta;
             else if (this.SourceButton.SelectedItem == this.StackAppsButton) api = StackAPI.StackApps;
 
-            QuestionsRequestBase request = null;
+            if (this.PendingRequest != null) {
+                this.PendingRequest.Abort();
+                this.PendingRequest = null;
+            }
 
             if (this.RequestTypeButton.SelectedItem == this.BrowseButton) {
                 var sort = QuestionSort.Creation;
@@ -56,37 +56,46 @@ namespace SpaceOverflow
                 else if (this.BrowseOptions.SelectedItem == this.HotButton) sort = QuestionSort.Hot;
                 else if (this.BrowseOptions.SelectedItem == this.ActiveButton) sort = QuestionSort.Activity;
 
-                request = new QuestionsRequest(api) {
+                this.PendingRequest = new QuestionsRequest(api) {
                     Sort = sort
                 };
             }
             else {
-                if (this.SearchPicker.SelectedItem == this.InQuestionsButton)
-                    request = new SearchRequest(api) {
+                if (this.SearchPicker.SelectedItem == this.InQuestionsButton) {
+                    if (this.SearchBox.Text == "") throw new Exception("Empty search!");
+                    this.PendingRequest = new SearchRequest(api) {
                         InTitle = this.SearchBox.Text
                     };
+                }
                 else if (this.SearchPicker.SelectedItem == this.ByAuthorButton) {
-                    var user = new UsersRequest(api) {
+                    new UsersRequest(api) {
                         Filter = this.SearchBox.Text,
                         PageSize = 100
-                    }.GetResponse().Items.OrderByDescending(item => {
-                        if (item.DisplayName.ToLower() == this.SearchBox.Text.ToLower()) return 1;
-                        else if (item.DisplayName.ToLower().Contains(this.SearchBox.Text.ToLower())) return 0.5;
-                        else return 0;
+                    }.BeginGetResponse(response => {
+                        var user = response.Items.OrderByDescending(item => {
+                            if (item.DisplayName.ToLower() == this.SearchBox.Text.ToLower()) return 1;
+                            else if (item.DisplayName.ToLower().Contains(this.SearchBox.Text.ToLower())) return 0.5;
+                            else return 0;
+                        });
+
+                        this.PendingRequest = new UsersQuestionsRequest(api) {
+                            UserID = user.First().ID,
+                            Sort = QuestionSort.Creation,
+                            Page = page,
+                            PageSize = 100
+                        };
+                        
+                        this.PendingRequest.BeginGetResponse(callback);
                     });
-
-                    if (user.Count() == 0) throw new Exception("User not found!");
-
-                    request = new UsersQuestionsRequest(api) {
-                        UserID = user.First().ID,
-                        Sort = QuestionSort.Creation
-                    };
                 }
             }
 
-            request.PageSize = 100;
-            request.Page = page;
-            return request.GetResponse().Items;
+            if (this.PendingRequest != null) {
+                this.PendingRequest.PageSize = 100;
+                this.PendingRequest.Page = page;
+
+                this.PendingRequest.BeginGetResponse(callback);
+            }
         }
 
         protected void Populate(IEnumerable<Question> rawQuestions)
