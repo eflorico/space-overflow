@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Nuclex.Fonts;
-using Nuclex.UserInterface;
 using System.Drawing;
 using SpaceOverflow.UI;
 using System.Threading;

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using Box2D.XNA;
 using StackExchange;
 using System.Threading;
 using System.Diagnostics;
