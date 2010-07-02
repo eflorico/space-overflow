@@ -1,0 +1,152 @@
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using System.Linq;
+using Microsoft.Xna.Framework.Graphics;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
+using System;
+using SpaceOverflow.Effects;
+
+namespace SpaceOverflow
+{
+    public partial class App
+    {
+        /// <summary>
+        /// Allows the game to run logic such as updating the world,
+        /// checking for collisions, gathering input, and playing audio.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        protected override void Update(GameTime gameTime)
+        {
+            if (this.State != AppState.BrowserOpened) {
+                this.UpdateGUI();
+
+                if (this.State == AppState.Ready) this.UpdateSpace(gameTime);
+
+                this.Animator.Update(gameTime);
+            }
+            else
+                this.UpdateBrowser();
+
+            this.LastKeyboardState = Keyboard.GetState();
+            this.LastMouseState = Mouse.GetState();
+
+            System.Windows.Forms.Application.DoEvents();
+
+            base.Update(gameTime);
+        }
+
+        protected void UpdateGUI() {
+            this.ToolBar.Position = new Vector2(0, this.Window.ClientBounds.Height - this.ToolBar.Measure().Y);
+            this.ToolBar.Size = new Vector2(this.Window.ClientBounds.Width, -1);
+            this.ToolBar.Arrange();
+            this.ToolBar.HandleMouse(Mouse.GetState(), this.LastMouseState);
+        }
+
+        protected void UpdateBrowser() {
+            if (!this.Browser.Visible)
+                this.State = AppState.Ready;
+            else {
+                this.Browser.Left = this.Window.ClientBounds.Left;
+                this.Browser.Top = this.Window.ClientBounds.Top;
+                this.Browser.Height = this.Window.ClientBounds.Height;
+                this.Browser.Width = this.Window.ClientBounds.Width;
+                this.Browser.BringToFront();
+            }
+        }
+
+        protected void UpdateSpace(GameTime gameTime) {
+            var mouseState = Mouse.GetState();
+
+            //If mouse was not processed by GUI
+            if (!this.ToolBar.Bounds.Contains(mouseState.X, mouseState.Y)) {
+                //Create ray at mouse position straight through 3D space
+                var nearFlat = new Vector3(mouseState.X, mouseState.Y, 0);
+                var farFlat = new Vector3(mouseState.X, mouseState.Y, -1);
+                var nearDeep = this.GraphicsDevice.Viewport.Unproject(nearFlat, this.Projection, this.View, this.World);
+                var farDeep = this.GraphicsDevice.Viewport.Unproject(farFlat, this.Projection, this.View, this.World);
+
+                var direction = nearDeep - farDeep;
+                direction.Normalize();
+
+                var ray = new Ray(nearDeep, direction);
+
+                //Zoom with mouse wheel
+                if (mouseState.ScrollWheelValue != LastMouseState.ScrollWheelValue) {
+                    //Compute length (10 / nudge)
+                    var length = (mouseState.ScrollWheelValue - LastMouseState.ScrollWheelValue) / 6;
+
+                    //Apply translation
+                    this.View.Translation -= ray.Direction * length;
+                }
+
+                //Mouse down...
+                if (mouseState.LeftButton == ButtonState.Pressed && this.LastMouseState.LeftButton == ButtonState.Released)
+                    foreach (var question in this.Questions.OrderByDescending(q => q.Position.Z)) {
+                        if (ray.Intersects(question.BoundingBox).HasValue) {
+                            this.ClickedQuestion = question;
+                            break;
+                        }
+                    }
+
+                //...and up (finalize)
+                if (mouseState.LeftButton == ButtonState.Released && this.ClickedQuestion != null &&
+                        ray.Intersects(this.ClickedQuestion.BoundingBox).HasValue) {
+                    this.Browser.WebBrowser.Navigate(this.ClickedQuestion.Question.TimelineUri);
+                    this.Browser.Show();
+                    this.Browser.BringToFront();
+                    this.State = AppState.BrowserOpened;
+                }
+
+                //Or drop it?
+                if (mouseState.LeftButton == ButtonState.Released)
+                    this.ClickedQuestion = null;
+
+                //Pan by dragging
+                if (mouseState.LeftButton == ButtonState.Pressed) {
+                    var currentMousePos = new Vector3(mouseState.X, -mouseState.Y, 0);
+
+                    if (this.LastMouseState.LeftButton == ButtonState.Pressed) {
+                        var move = currentMousePos - new Vector3(this.LastMouseState.X, -this.LastMouseState.Y, 0);
+                        if (move.Length() > 0) this.PanForce = move;
+                        this.View.Translation += move;
+                    }
+                    else
+                        this.PanForce = Vector3.Zero;
+                }
+
+                //Pan force
+                var len = this.PanForce.Length();
+
+                if (this.LastMouseState.LeftButton == ButtonState.Released && len > 0) {
+                    this.View.Translation += this.PanForce;
+                    if (len > 20)
+                        this.PanForce *= 20 / len;
+                    if (len > 1)
+                        this.PanForce *= 0.9f; //TODO: Make proportional to elapsed game time
+                    else
+                        this.PanForce = Vector3.Zero;
+                }
+            }
+        }
+
+        protected void Implode() {
+            var animation = new Animation(this, "View.Translation.Z",
+                this.View.Translation.Z - this.NearPlane - this.FarPlane,
+                new TimeSpan(0, 0, 1), Interpolators.CubicIn);  
+
+            this.Animator.Animations.Add(animation);
+        }
+
+        protected void Explode() {
+            this.ResetView();
+            this.View.Translation = new Vector3(this.View.Translation.X, this.View.Translation.Y, -this.NearPlane - this.FarPlane);
+            
+            var animation = new Animation(this, "View.Translation.Z", 0f,
+                new TimeSpan(0, 0, 1), Interpolators.CubicOut);
+
+            this.Animator.Animations.Add(animation);
+        }
+    }
+}
