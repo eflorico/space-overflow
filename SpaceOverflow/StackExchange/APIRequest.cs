@@ -33,38 +33,64 @@ namespace StackExchange
 
         protected abstract TResponse ProcessResponse(JObject response);
 
-        public TResponse GetResponse()
-        {
-            var stw = new Stopwatch();
-            stw.Start();
+        protected HttpWebRequest Request;
 
+        protected HttpWebRequest CreateRequest() {
             var request = (HttpWebRequest)WebRequest.Create(this.GetUri());
             request.CachePolicy = new System.Net.Cache.HttpRequestCachePolicy(System.Net.Cache.HttpRequestCacheLevel.NoCacheNoStore);
-            //request.Timeout = 3000;
+            request.Timeout = 10000;
+            return request;
+        }
 
-            var response = (HttpWebResponse)request.GetResponse();
+        protected TResponse ReceiveResponse(HttpWebResponse response) {
             var responseStream = response.GetResponseStream();
-
-            stw.Stop();
-            Debug.Print("Got response in " + stw.Elapsed.ToString());
-            stw.Reset();
-            stw.Start();
 
             if (response.ContentEncoding.ToLower().Contains("gzip"))
                 responseStream = new GZipStream(responseStream, CompressionMode.Decompress);
             else if (response.ContentEncoding.ToLower().Contains("deflate"))
-                responseStream = new DeflateStream(responseStream, CompressionMode.Decompress);            
+                responseStream = new DeflateStream(responseStream, CompressionMode.Decompress);
 
             var reader = new StreamReader(responseStream);
             var json = reader.ReadToEnd();
             reader.Close();
             response.Close();
 
-            stw.Stop();
-            Debug.Print("Parsed JSON in " + stw.Elapsed.ToString());
-            stw.Reset();
-
             return this.ProcessResponse(JObject.Parse(json));
+        }
+
+        public TResponse GetResponse()
+        {
+            var request = this.CreateRequest();
+            return this.ReceiveResponse((HttpWebResponse)request.GetResponse());
+        }
+
+        public void BeginGetResponse(Action<TResponse> callback) {
+            this.Abort();
+
+            Debug.Print("-- Request to " + this.Route + " started");
+
+            this.Request = this.CreateRequest();
+            this.Request.BeginGetResponse(new AsyncCallback(result => {
+                
+                try {
+                    var httpResponse = (HttpWebResponse)this.Request.EndGetResponse(result);
+                    Debug.Print("-- Got response for " + this.Route);
+                    var response = this.ReceiveResponse(httpResponse);
+                    callback(response);
+                    this.Request = null;
+                    Debug.Print("-- Response from " + this.Route + " processed");
+                }
+                catch (WebException) {  }
+                
+            }), null);
+        }
+
+        public void Abort() {
+            
+            if (this.Request != null) {
+                this.Request.Abort();
+                Debug.Print("-- Aborted request to " + this.Route);
+            } 
         }
     }
 }

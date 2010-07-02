@@ -9,6 +9,7 @@ using System.Drawing;
 using SpaceOverflow.UI;
 using System.Threading;
 using SpaceOverflow.Effects;
+using StackExchange;
 
 namespace SpaceOverflow
 {
@@ -22,7 +23,7 @@ namespace SpaceOverflow
 
         //Data
         List<QuestionInSpace> Questions;
-        Thread LoadingThread;
+        QuestionsRequestBase PendingRequest;
 
         //Input
         KeyboardState LastKeyboardState;
