@@ -58,10 +58,6 @@
     <XnaCompressContent>true</XnaCompressContent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Box2D.XNA, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Libs\Box2D.XNA.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86">
       <Private>False</Private>
       <SpecificVersion>True</SpecificVersion>
@@ -81,10 +77,6 @@
     <Reference Include="Nuclex.Graphics, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Libs\Nuclex Framework\Nuclex.Graphics.dll</HintPath>
-    </Reference>
-    <Reference Include="Nuclex.UserInterface, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Libs\Nuclex Framework\Nuclex.UserInterface.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <Private>False</Private>
