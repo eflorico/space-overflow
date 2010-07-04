@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
-using System.Reflection;
 
 namespace SpaceOverflow.Effects
 {
@@ -29,6 +25,7 @@ namespace SpaceOverflow.Effects
             this.To = to;
             this.Duration = duration;
             this.Interpolator = interpolator;
+            this.Repetitions = 1;
         }
 
         public object From { get; set; }
@@ -37,6 +34,7 @@ namespace SpaceOverflow.Effects
         public Interpolator Interpolator { get; set; }
         public object TargetObject { get; set; }
         public string TargetPropertyName { get; set; }
+        public int Repetitions { get; set; }
 
         public AnimationState State { get; protected set; }
 
@@ -54,10 +52,15 @@ namespace SpaceOverflow.Effects
                 var progress = (float)(gameTime.TotalGameTime - this.StartTime).Ticks / (float)this.Duration.Ticks;
                 if (progress < 1) this.TargetProperty.Value = this.Interpolator(this.ActualFrom, this.To, progress);
                 else { //Finish animation
-                    this.State = AnimationState.Finished;
-                    this.TargetProperty.Value = this.To;
-
-                    if (this.Finished != null) this.Finished(this, EventArgs.Empty);
+                    if (this.Repetitions > 0 && --this.Repetitions == 0) {
+                        this.State = AnimationState.Finished;
+                        this.TargetProperty.Value = this.To;
+                        if (this.Finished != null) this.Finished(this, EventArgs.Empty);
+                    }
+                    else {
+                        this.TargetProperty.Value = this.ActualFrom;
+                        this.StartTime = gameTime.TotalGameTime;
+                    }
                 }
             }
         }

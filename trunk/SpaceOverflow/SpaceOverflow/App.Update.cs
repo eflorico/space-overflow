@@ -24,7 +24,7 @@ namespace SpaceOverflow
 
                 if (this.State == AppState.Ready) this.UpdateSpace(gameTime);
 
-                this.Animator.Update(gameTime);
+                Animator.Update(gameTime);
             }
             else
                 this.UpdateBrowser();
@@ -79,6 +79,12 @@ namespace SpaceOverflow
 
                     //Apply translation
                     this.View.Translation -= ray.Direction * length;
+
+                    //Expand population if necessary
+                    if (this.CurrentRequest != null && !this.CurrentRequest.IsLoading && this.Questions.Count > 0 && -this.View.Translation.Z - 2000 < this.Questions.Min(q => q.Position.Z)) {
+                        ++this.CurrentRequest.Page;
+                        this.LoadAndExpand();
+                    }
                 }
 
                 //Mouse down...
@@ -136,7 +142,7 @@ namespace SpaceOverflow
                 this.View.Translation.Z - this.NearPlane - this.FarPlane,
                 new TimeSpan(0, 0, 1), Interpolators.CubicIn);  
 
-            this.Animator.Animations.Add(animation);
+            Animator.Animations.Add(animation);
         }
 
         protected void Explode() {
@@ -146,7 +152,7 @@ namespace SpaceOverflow
             var animation = new Animation(this, "View.Translation.Z", 0f,
                 new TimeSpan(0, 0, 1), Interpolators.CubicOut);
 
-            this.Animator.Animations.Add(animation);
+            Animator.Animations.Add(animation);
         }
     }
 }

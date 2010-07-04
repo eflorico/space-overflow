@@ -1,28 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 
 namespace SpaceOverflow.Effects
 {
     /// <summary>
     /// Updates Animations based on an XNA GameTime.
     /// </summary>
-    public class Animator
+    public static class Animator
     {
-        public Animator() {
-            this.Animations = new List<Animation>();
+        static Animator() {
+            Animations = new List<Animation>();
         }
 
-        public List<Animation> Animations { get; private set; }
+        public static List<Animation> Animations { get; private set; }
 
-        public void Update(GameTime gameTime) {
-            for( var i = 0; i< this.Animations.Count; ++i)
-                if (this.Animations[i].State != AnimationState.Finished) this.Animations[i].Update(gameTime);
-                else this.Animations.RemoveAt(i--);
+        public static void Update(GameTime gameTime) {
+            for (var i = 0; i < Animations.Count; ++i)
+                if (Animations[i].State != AnimationState.Finished) Animations[i].Update(gameTime);
+                else Animations.RemoveAt(i--);
         }
     }
 }

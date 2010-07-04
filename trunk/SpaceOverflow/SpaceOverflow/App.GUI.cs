@@ -5,6 +5,7 @@ using System.Text;
 using SpaceOverflow.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SpaceOverflow.Effects;
 
 namespace SpaceOverflow
 {
@@ -154,6 +155,28 @@ namespace SpaceOverflow
             this.StackOverflowButton = new Button() { Text = "Stack Overflow" };
             this.SourceButton.AddItem(this.StackOverflowButton);
 
+            //Loading
+            this.ProgressLabel = new Button() {
+                Text = "Ready",
+                TextShadow = new TextShadow() {
+                    Opacity = 0
+                },
+                Font = this.SmallUIFont,
+                Padding = new Thickness(14, 9, 0, 9)
+            };
+            this.ToolBar.AddChild(this.ProgressLabel);
+
+            this.ProgressIndicator = new ImageBox() {
+                Image = this.Wheel,
+                Padding = new Thickness(14, 0, 0, 0),
+                IsVisible = false
+            };
+            this.ToolBar.AddChild(this.ProgressIndicator);
+
+            Animator.Animations.Add(new Animation(this.ProgressIndicator, "Rotation", 0f, (float)Math.PI, new TimeSpan(0, 0, 1), Interpolators.Linear) {
+                Repetitions = -1
+            });
+
             //Defaults
             this.RequestTypeButton.SelectedItem = this.BrowseButton;
             this.SourceButton.SelectedItem = this.StackOverflowButton;
@@ -177,7 +200,7 @@ namespace SpaceOverflow
                 splitButton.SelectedItemChanged += new EventHandler<SelectedChildChangedEventArgs>((sender, e) => {
                     if (e.OldSelectedChild != null) e.OldSelectedChild.Backgrounds.Remove(this.IndicatorBackground);
                     if (e.NewSelectedChild != null) e.NewSelectedChild.Backgrounds.Add(this.IndicatorBackground);
-                    this.Repopulate();
+                    this.ReloadAndPopulate();
                 });
             }
 
@@ -204,13 +227,13 @@ namespace SpaceOverflow
 
             //Event handlers
             this.SearchBox.KeyPressed += new KeyEventHandler((sender, e) => {
-                if (e.KeyCode == Microsoft.Xna.Framework.Input.Keys.Enter && this.SearchBox.Text != "") this.Repopulate();
+                if (e.KeyCode == Microsoft.Xna.Framework.Input.Keys.Enter && this.SearchBox.Text != "") this.ReloadAndPopulate();
             });
             this.SearchPicker.SelectedItemChanged += new EventHandler<SelectedChildChangedEventArgs>((sender, e) => {
-                if (this.SearchBox.Text != "") this.Repopulate();
+                if (this.SearchBox.Text != "") this.ReloadAndPopulate();
             });
 
-            this.SourceButton.SelectedItemChanged += new EventHandler<SelectedChildChangedEventArgs>((sender, e) => this.Repopulate());
+            this.SourceButton.SelectedItemChanged += new EventHandler<SelectedChildChangedEventArgs>((sender, e) => this.ReloadAndPopulate());
 
             //Defaults
             this.BrowseOptions.SelectedItem = this.CreationButton;

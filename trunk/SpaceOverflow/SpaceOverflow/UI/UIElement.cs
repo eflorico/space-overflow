@@ -13,6 +13,7 @@ namespace SpaceOverflow.UI
         public UIElement() {
             this.Children = new List<UIElement>();
             this.Backgrounds = new List<Background>();
+            this.IsVisible = true;
         }
 
         private Vector2 _position, _size = new Vector2(-1, -1);
@@ -135,6 +136,7 @@ namespace SpaceOverflow.UI
             }
         }
 
+        public bool IsVisible { get; set; }
         public List<Background> Backgrounds { get; private set; }
 
         public virtual void Arrange() {
@@ -146,7 +148,11 @@ namespace SpaceOverflow.UI
 
         public abstract Vector2 Measure();
 
-        public virtual void DrawTo(SpriteBatch target) {
+        public void DrawTo(SpriteBatch target) {
+            if (this.IsVisible) this.DrawOverride(target);
+        }
+
+        protected virtual void DrawOverride(SpriteBatch target) {
             this.DrawBackgrounds(target);
             this.DrawChildren(target);
         }

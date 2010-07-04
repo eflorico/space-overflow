@@ -53,7 +53,7 @@ namespace SpaceOverflow.UI
             this.IsCaretVisible = false;
         }
 
-        public override void DrawTo(SpriteBatch target) {
+        protected override void DrawOverride(SpriteBatch target) {
             base.DrawBackgrounds(target);
 
             var position = this.Position + new Vector2(this.Padding.Left, this.Padding.Top);
