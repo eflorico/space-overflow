@@ -198,12 +198,6 @@ namespace SpaceOverflow
                 var theta = this.ThetaMapper(q);
 
                 return new Vector3(r * (float)Math.Cos(theta), r * (float)Math.Sin(theta), z);
-                //return new QuestionInSpace() {
-                //    Question = q,
-                //    Position =,
-                //    Size = this.SpriteQuestionFont.MeasureString(q.Title),
-                //    Text = this.VectorQuestionFont.Fill(q.Title)
-                //};
             });
         }
 

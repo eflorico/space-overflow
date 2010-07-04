@@ -3,6 +3,9 @@ using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
+//Thanks to Promit from gamedev.net for this class
+//http://www.gamedev.net/community/forums/topic.asp?topic_id=457783&whichpage=1&#3040190
+
 namespace SpaceOverflow.UI
 {
     public class CharacterEventArgs : EventArgs

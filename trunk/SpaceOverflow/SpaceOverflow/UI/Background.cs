@@ -6,6 +6,9 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace SpaceOverflow.UI
 {
+    /// <summary>
+    /// A background drawn by a UIElement.
+    /// </summary>
     public class Background
     {
         public Background(Texture2D texture)
@@ -27,11 +30,11 @@ namespace SpaceOverflow.UI
 
     public enum BackgroundPosition
     {
-        Top = 0,
-        Right = 1,
-        Bottom = 2,
-        Left = 3,
-        Center = 4,
-        Fill = 5
+        Top,
+        Right,
+        Bottom,
+        Left,
+        Center,
+        Fill
     }
 }
