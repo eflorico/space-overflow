@@ -21,6 +21,7 @@ namespace StackExchange
                        OwnerReputation = i["owner"] != null ? i["owner"]["reputation"].Value<int>() : 0,
                        Tags = i["tags"].Children().Select(j => j.Value<string>()).ToList(),
                        CreationDate = i["creation_date"].Value<int>().ToDateTime(),
+                       LastActivityDate = i["last_activity_date"].Value<int>().ToDateTime(),
                        AnswerCount = i["answer_count"].Value<int>(),
                        FavoriteCount = i["favorite_count"].Value<int>(),
                        UpVoteCount = i["up_vote_count"].Value<int>(),

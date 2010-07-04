@@ -145,13 +145,20 @@ namespace SpaceOverflow
 
             if (this.ZOrderButton.SelectedItem == this.ZCreationButton) zCriterionSelector = new Func<Question, float>(q => (float)q.CreationDate.ToUnixTimestamp());
             else if (this.ZOrderButton.SelectedItem == this.ZFeaturedButton) zCriterionSelector = new Func<Question, float>(q =>
-                counter--);
+                counter++);
             else if (this.ZOrderButton.SelectedItem == this.ZVotesButton) zCriterionSelector = new Func<Question, float>(q => q.UpVoteCount - q.DownVoteCount);
-            else if (this.ZOrderButton.SelectedItem == this.ZHotButton) zCriterionSelector = new Func<Question, float>(q => counter--);
+            else if (this.ZOrderButton.SelectedItem == this.ZHotButton) zCriterionSelector = new Func<Question, float>(q => counter++);
             else if (this.ZOrderButton.SelectedItem == this.ZActiveButton) zCriterionSelector = new Func<Question, float>(q => q.LastActivityDate.Ticks);
 
-            minZ = questions.Min(zCriterionSelector);
-            maxZ = questions.Max(zCriterionSelector);
+            if (this.ZOrderButton.SelectedItem == this.ZFeaturedButton || this.ZOrderButton.SelectedItem == this.ZHotButton) {
+                minZ = 0;
+                maxZ = questions.Count();
+            }
+            else {
+                minZ = questions.Min(zCriterionSelector);
+                maxZ = questions.Max(zCriterionSelector);
+            }
+            
 
             this.ZMapper = new Func<Question, float>(q => {
                 if (maxZ - minZ == 0) return 1;

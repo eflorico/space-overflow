@@ -20,9 +20,7 @@ namespace SpaceOverflow
         protected override void Update(GameTime gameTime)
         {
             if (this.State != AppState.BrowserOpened) {
-                this.UpdateGUI();
-
-                if (this.State == AppState.Ready) this.UpdateSpace(gameTime);
+                if (!this.UpdateGUI()) this.UpdateSpace(gameTime);
 
                 Animator.Update(gameTime);
             }
@@ -37,11 +35,11 @@ namespace SpaceOverflow
             base.Update(gameTime);
         }
 
-        protected void UpdateGUI() {
+        protected bool UpdateGUI() {
             this.ToolBar.Position = new Vector2(0, this.Window.ClientBounds.Height - this.ToolBar.Measure().Y);
             this.ToolBar.Size = new Vector2(this.Window.ClientBounds.Width, -1);
             this.ToolBar.Arrange();
-            this.ToolBar.HandleMouse(Mouse.GetState(), this.LastMouseState);
+            return this.ToolBar.HandleMouse(Mouse.GetState(), this.LastMouseState);
         }
 
         protected void UpdateBrowser() {
