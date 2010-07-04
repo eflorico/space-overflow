@@ -18,9 +18,10 @@ namespace SpaceOverflow.UI
             this.AddChild(this.DropDownMenu);
 
             this.Button = new Button();
+            this.Button.Clicked += this.OnSelectedItemClicked;
             this.AddChild(this.Button);
 
-            this.Button.Clicked += this.OnSelectedItemClicked;
+            this.IsDropped = false;
         }
 
         protected override void OnItemAdded(UIElement item) {
@@ -61,7 +62,11 @@ namespace SpaceOverflow.UI
             }
         }
 
-        public bool IsDropped { get; set; }
+        public bool IsDropped {
+            get { return this.DropDownMenu.IsVisible; }
+            set { this.DropDownMenu.IsVisible = value; }
+        }
+
         public Texture2D SelectedIndicator { get; set; }
         public StackPanel DropDownMenu { get; private set; }
         public Button Button { get; private set; }
@@ -100,7 +105,7 @@ namespace SpaceOverflow.UI
             return this.Button.Measure();
         }
 
-        public override void DrawTo(SpriteBatch target) {
+        protected override void DrawOverride(SpriteBatch target) {
             base.DrawBackgrounds(target);
 
             if (this.SelectedIndicator != null)
@@ -108,8 +113,7 @@ namespace SpaceOverflow.UI
                             new Vector2(this.Button.Bounds.Center.X - this.SelectedIndicator.Width / 2, this.Button.Position.Y),
                             Color.White);
 
-            this.Button.DrawTo(target);
-            if (this.IsDropped) this.DropDownMenu.DrawTo(target);
+            base.DrawChildren(target);
         }
 
         public override void HandleMouse(MouseState mouseState, MouseState lastMouseState) {

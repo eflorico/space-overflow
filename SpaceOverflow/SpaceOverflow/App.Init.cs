@@ -66,7 +66,6 @@ namespace SpaceOverflow
             this.UpdateProjection();
 
             this.Questions = new List<QuestionInSpace>();
-            this.Animator = new SpaceOverflow.Effects.Animator();
 
             StackAPI.Key = "yLHF9Tb_NEGJY_el8Gu1Bw";
 
@@ -80,7 +79,7 @@ namespace SpaceOverflow
         }
 
         protected void ResetProjection() {
-            this.FarPlane = 4500;
+            this.FarPlane = 2400;
             this.FarFade = 700;
             this.NearFade = 400;
             this.NearPlane = 100;
@@ -103,7 +102,8 @@ namespace SpaceOverflow
             //Load vector font :-)
             this.VectorQuestionFont = this.Content.Load<VectorFont>("VectorFont");
             this.SpriteQuestionFont = this.Content.Load<SpriteFont>("SpriteFont");
-            this.UIFont = this.Content.Load<SpriteFont>("HUDFont");
+            this.UIFont = this.Content.Load<SpriteFont>("UIFont");
+            this.SmallUIFont = this.Content.Load<SpriteFont>("SmallUIFont");
 
             //Textures
             this.SpaceBackground = this.Content.Load<Texture2D>("Space");
@@ -123,11 +123,12 @@ namespace SpaceOverflow
             this.ToolBarBackground.FillSolid(new Color(83, 80, 133, 122));
             this.Caret = new Texture2D(this.GraphicsDevice, 1, 1, 1, TextureUsage.Tiled, SurfaceFormat.Color);
             this.Caret.FillSolid(new Color(84, 84, 84));
+            this.Wheel = this.Content.Load<Texture2D>("Wheel");
 
             this.InitializeGUI();
 
             //Initial population
-            this.Repopulate();
+            this.ReloadAndPopulate();
         }
     }
 }

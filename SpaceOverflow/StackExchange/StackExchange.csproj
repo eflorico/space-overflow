@@ -46,6 +46,7 @@
     <Compile Include="APIDataRequest.cs" />
     <Compile Include="APIObject.cs" />
     <Compile Include="APIRequest.cs" />
+    <Compile Include="APIRequestBase.cs" />
     <Compile Include="DataResponse.cs" />
     <Compile Include="QuestionsRequest.cs" />
     <Compile Include="QuestionsRequestBase.cs" />

@@ -35,8 +35,14 @@ namespace SpaceOverflow.UI
             if ((size.X < 0 || size.Y < 0) && this.Children.Count > 0) {
                 var lastChild = this.Children.Last();
 
-                if (size.X < 0) size.X = lastChild.Bounds.Right - this.Position.X;
-                if (size.Y < 0) size.Y = lastChild.Bounds.Bottom - this.Position.Y;
+                if (this.Orientation == Orientation.Horizontal) {
+                    if (size.X < 0) size.X = lastChild.Bounds.Right - this.Position.X;
+                    if (size.Y < 0) size.Y = this.Children.Max(child => child.Bounds.Bottom) - this.Position.Y;
+                }
+                else {
+                    if (size.X < 0) size.X = this.Children.Max(child => child.Bounds.Right) - this.Position.X;
+                    if (size.Y < 0) size.Y = lastChild.Bounds.Bottom - this.Position.Y;
+                }
             }
             
             size += this.Padding;
@@ -44,10 +50,10 @@ namespace SpaceOverflow.UI
             return size;
         }
 
-        public override void DrawTo(SpriteBatch target) {
+        protected override void DrawOverride(SpriteBatch target) {
             var rect = this.Bounds;
 
-            base.DrawTo(target);
+            base.DrawOverride(target);
 
             if (this.Split != null)
                 foreach (var child in this.Children.Take(this.Children.Count - 1)) {

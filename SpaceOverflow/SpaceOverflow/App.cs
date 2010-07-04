@@ -20,10 +20,6 @@ namespace SpaceOverflow
         //State
         AppState State = AppState.Ready;
 
-        //Data
-        List<QuestionInSpace> Questions;
-        QuestionsRequestBase PendingRequest;
-
         //Input
         KeyboardState LastKeyboardState;
         MouseState LastMouseState;
@@ -38,20 +34,17 @@ namespace SpaceOverflow
         Matrix World, View, Projection;
         float FarPlane, FarFade, NearFade, NearPlane;
 
-        //Animation
-        Animator Animator;
-
         //General graphics
         GraphicsDeviceManager DeviceManager;
 
         //Font resources
         VectorFont VectorQuestionFont;
-        SpriteFont SpriteQuestionFont, UIFont;
+        SpriteFont SpriteQuestionFont, UIFont, SmallUIFont;
         
         //Texture resources
         Texture2D ToolBarBackground, ButtonBackground, ButtonEdge, ButtonSplit, ButtonIndicator;
         Texture2D TextBoxBackground, TextBoxEdge, TextBoxRoundedEdge, TextBoxIndicator;
-        Texture2D Caret, DropDownBackground, DropDownEdge, DropDownSplit;
+        Texture2D Caret, Wheel, DropDownBackground, DropDownEdge, DropDownSplit;
         Texture2D SpaceBackground, God;
 
         //UI
@@ -67,6 +60,8 @@ namespace SpaceOverflow
                         Button InQuestionsButton, ByAuthorButton, ByActivityButton;
                 DropDownButton SourceButton;
                     Button StackOverflowButton, ServerFaultButton, SuperUserButton, MetaButton, StackAppsButton;
+                    Button ProgressLabel;
+                    ImageBox ProgressIndicator;
         BrowserOverlay Browser;
 
 

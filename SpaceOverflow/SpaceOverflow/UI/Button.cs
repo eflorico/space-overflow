@@ -40,8 +40,8 @@ namespace SpaceOverflow.UI
             return size;
         }
 
-        public override void DrawTo(SpriteBatch target) {
-            base.DrawTo(target);
+        protected override void DrawOverride(SpriteBatch target) {
+            base.DrawOverride(target);
 
             var rect = this.Bounds;
 

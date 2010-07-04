@@ -54,7 +54,7 @@ namespace SpaceOverflow.UI
             this.SelectedItem = (UIElement)sender;
         }
 
-        public override void DrawTo(SpriteBatch target)
+        protected override void DrawOverride(SpriteBatch target)
         {
             base.DrawBackgrounds(target);
 

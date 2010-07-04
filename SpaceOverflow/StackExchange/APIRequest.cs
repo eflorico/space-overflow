@@ -10,37 +10,12 @@ using System.Diagnostics;
 
 namespace StackExchange
 {
-    public abstract class APIRequest<TResponse> : APIObject
+    public abstract class APIRequest<TResponse> : APIRequestBase
     {
         public APIRequest(StackAPI api)
-            : base(api)
-        { }
-
-        protected abstract string Route { get; }
-        protected abstract Dictionary<string, string> Parameters { get; }
-
-        protected Uri GetUri()
-        {
-            var parameters = this.Parameters;
-
-            if (StackAPI.Key != null) parameters.Add("key", StackAPI.Key);
-            
-            var uri = this.API.APIBaseURI.ToString() + this.Route;
-            uri += "?" + parameters.Aggregate("", (sum, item) => sum + Uri.EscapeDataString(item.Key) + "=" + Uri.EscapeDataString(item.Value) + "&");
-
-            return new Uri(uri);
-        }
+            : base(api) { }
 
         protected abstract TResponse ProcessResponse(JObject response);
-
-        protected HttpWebRequest Request;
-
-        protected HttpWebRequest CreateRequest() {
-            var request = (HttpWebRequest)WebRequest.Create(this.GetUri());
-            request.CachePolicy = new System.Net.Cache.HttpRequestCachePolicy(System.Net.Cache.HttpRequestCacheLevel.NoCacheNoStore);
-            request.Timeout = 10000;
-            return request;
-        }
 
         protected TResponse ReceiveResponse(HttpWebResponse response) {
             var responseStream = response.GetResponseStream();
@@ -58,8 +33,7 @@ namespace StackExchange
             return this.ProcessResponse(JObject.Parse(json));
         }
 
-        public TResponse GetResponse()
-        {
+        public TResponse GetResponse() {
             var request = this.CreateRequest();
             return this.ReceiveResponse((HttpWebResponse)request.GetResponse());
         }
@@ -69,9 +43,9 @@ namespace StackExchange
 
             Debug.Print("-- Request to " + this.Route + " started");
 
+            this.IsLoading = true;
             this.Request = this.CreateRequest();
             this.Request.BeginGetResponse(new AsyncCallback(result => {
-                
                 try {
                     var httpResponse = (HttpWebResponse)this.Request.EndGetResponse(result);
                     Debug.Print("-- Got response for " + this.Route);
@@ -80,17 +54,11 @@ namespace StackExchange
                     this.Request = null;
                     Debug.Print("-- Response from " + this.Route + " processed");
                 }
-                catch (WebException) {  }
-                
+                catch (WebException) { }
+                finally {
+                    this.IsLoading = false;
+                }
             }), null);
-        }
-
-        public void Abort() {
-            
-            if (this.Request != null) {
-                this.Request.Abort();
-                Debug.Print("-- Aborted request to " + this.Route);
-            } 
         }
     }
 }
