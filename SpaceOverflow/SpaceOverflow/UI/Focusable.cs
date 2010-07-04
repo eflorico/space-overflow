@@ -27,6 +27,9 @@ namespace SpaceOverflow.UI
             }
         }
 
+        public virtual void HandleCharacterInput(CharacterEventArgs evArgs) { }
+        public virtual void HandleKeyStroke(KeyEventArgs evArgs) { }
+
         public event EventHandler GotFocus;
         public event EventHandler LostFocus;
 

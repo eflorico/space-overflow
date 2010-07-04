@@ -141,11 +141,11 @@ namespace SpaceOverflow.UI
             if (this.KeyPressed != null) this.KeyPressed(this, e);
         }
 
-        protected override void OnClicked() {
-            base.OnClicked();
+        protected override void OnClicked(Vector2 position) {
+            base.OnClicked(position);
 
             this.Manager.Focus = this;
-            this.CaretPosition = this.FindCharIndex(Mouse.GetState().X - this.Position.X - this.Padding.Left);
+            this.CaretPosition = this.FindCharIndex(position.X - this.Padding.Left);
         }
 
     }

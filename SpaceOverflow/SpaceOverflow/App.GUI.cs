@@ -52,70 +52,50 @@ namespace SpaceOverflow
                 }
             };
             this.ToolBar.Backgrounds.Add(new Background(this.ToolBarBackground));
-
             this.UIManager = new UIManager(this.ToolBar);
 
-            //Browse or Search
-            this.RequestTypeButton = new SplitButton();
-            this.ToolBar.AddChild(this.RequestTypeButton);
-
-            //Browse
-            this.BrowseButton = new Button() { Text = "Browse" };
-            this.RequestTypeButton.AddItem(this.BrowseButton);
-
-            //Search
-            this.SearchButton = new Button() { Text = "Search" };
-            this.RequestTypeButton.AddItem(this.SearchButton);
+            //Browse or search
+            this.ToolBar.AddChild(this.RequestTypeButton = new SplitButton());
+            this.RequestTypeButton.AddItem(this.BrowseButton = new Button() { Text = "Browse" });
+            this.RequestTypeButton.AddItem(this.SearchButton = new Button() { Text = "Search" });
+            this.RequestTypeButton.SelectedItem = this.BrowseButton;
+            this.RequestTypeButton.SelectedItemChanged += new EventHandler<SelectedItemChangedEventArgs>((sender, e) => {
+                if (e.OldSelectedChild != e.NewSelectedChild)
+                    if (e.NewSelectedChild == this.BrowseButton) this.ToolBar.RemoveChild(this.SearchOptions);
+                    else this.ToolBar.InsertChild(1, this.SearchOptions);
+                this.ReloadAndPopulate();
+            });
+            
 
             //Mapping
-            var zOrderPanel = new StackPanel() {
-                Split = this.ButtonSplit
-            };
+            var zOrderPanel = new StackPanel() { Split = this.ButtonSplit };
             this.ToolBar.AddChild(zOrderPanel);
-
-            zOrderPanel.AddChild(new Button() {
-                Text = "Z:"
-            });
-
-            this.ZOrderButton = new DropDownButton();
-            zOrderPanel.AddChild(this.ZOrderButton);
+            zOrderPanel.AddChild(new Button() { Text = "Closest:" });
+            zOrderPanel.AddChild(this.ZOrderButton = new DropDownButton());
+            this.ZOrderButton.AddItem(this.ZCreationButton = new Button() { Text = "Newest" });
+            this.ZOrderButton.AddItem(this.ZFeaturedButton = new Button() { Text = "Featured" });
+            this.ZOrderButton.AddItem(this.ZVotesButton = new Button() { Text = "Most votes" });
+            this.ZOrderButton.AddItem(this.ZHotButton = new Button() { Text = "Hottest" });
+            this.ZOrderButton.AddItem(this.ZActiveButton = new Button() { Text = "Latest activity" });
+            this.ZOrderButton.SelectedItemChanged += new EventHandler<SelectedItemChangedEventArgs>((sender, e) =>
+                this.ReloadAndPopulate());
 
             var rOrderPanel = new StackPanel();
             this.ToolBar.AddChild(rOrderPanel);
+            rOrderPanel.AddChild(new Button() { Text = "Centered:" });
+            rOrderPanel.AddChild(this.ROrderButton = new DropDownButton());
+            this.ROrderButton.AddItem(this.RVotesButton = new Button() { Text = "Most votes" });
+            this.ROrderButton.AddItem(this.ROwnerReputationButton = new Button() { Text = "Best owner rep." });
+            this.ROrderButton.AddItem(this.RActiveButton = new Button() { Text = "Latest activity" });
 
-            rOrderPanel.AddChild(new Button() {
-                Text = "R:"
-            });
-
-            this.ROrderButton = new DropDownButton();
-            rOrderPanel.AddChild(this.ROrderButton);
-
-            //Orders
-            this.ZCreationButton = new Button() { Text = "Newest" };
-            this.ZOrderButton.AddItem(this.ZCreationButton);
-
-            this.ZFeaturedButton = new Button() { Text = "Featured" };
-            this.ZOrderButton.AddItem(this.ZFeaturedButton);
-
-            this.ZVotesButton = new Button() { Text = "Votes" };
-            this.ZOrderButton.AddItem(this.ZVotesButton);
-
-            this.ZHotButton = new Button() { Text = "Hot" };
-            this.ZOrderButton.AddItem(this.ZHotButton);
-
-            this.ZActiveButton = new Button() { Text = "Active" };
-            this.ZOrderButton.AddItem(this.ZActiveButton);
-
-            this.ROrderButton.AddItem(this.RVotesButton = new Button() { Text = "Votes" });
-            this.ROrderButton.AddItem(this.ROwnerReputationButton = new Button() { Text = "Owner reputation" });
-            this.ROrderButton.AddItem(this.RActiveButton = new Button() { Text = "Active" });
-
+            this.ROrderButton.SelectedItemChanged += new EventHandler<SelectedItemChangedEventArgs>((sender, e) =>
+                this.ReMap());
 
             //Search options
             this.SearchOptions = new StackPanel();
 
             //Textbox
-            this.SearchBox = new TextBox() {
+            this.SearchOptions.AddChild(this.SearchBox = new TextBox() {
                 Padding = new Thickness(12, 10, 0, 10),
                 Size = new Vector2(140, 28),
                 Caret = this.Caret,
@@ -124,16 +104,18 @@ namespace SpaceOverflow
                 },
                 Foreground = new Color(60, 60, 60),
                 Placeholder = "Search"
-            };
+            });
             this.SearchBox.Backgrounds.AddRange(new Background[] {
                 new Background(this.TextBoxRoundedEdge, BackgroundPosition.Left),
                 new Background(this.TextBoxEdge, BackgroundPosition.Right),
                 new Background(this.TextBoxBackground)
             });
-            this.SearchOptions.AddChild(this.SearchBox);
+            this.SearchBox.KeyPressed += new KeyEventHandler((sender, e) => {
+                if (e.KeyCode == Microsoft.Xna.Framework.Input.Keys.Enter && this.SearchBox.Text != "") this.ReloadAndPopulate();
+            });
 
             //Search picker
-            this.SearchPicker = new DropDownButton();
+            this.SearchOptions.AddChild(this.SearchPicker = new DropDownButton());
             this.SearchPicker.Backgrounds.AddRange(new Background[] {
                 new Background(this.ButtonEdge, BackgroundPosition.Right, SpriteEffects.FlipHorizontally),
                 new Background(this.ButtonBackground),
@@ -148,77 +130,53 @@ namespace SpaceOverflow
             });
             this.SearchPicker.DropDownMenu.Split = this.DropDownSplit;
             this.SearchPicker.DropDownMenu.Padding = new Thickness(1);
-            this.SearchOptions.AddChild(this.SearchPicker);
+            this.SearchPicker.SelectedItemChanged += new EventHandler<SelectedItemChangedEventArgs>((sender, e) => {
+                if (this.SearchBox.Text != "") this.ReloadAndPopulate();
+            });
 
-            //Search picker items
-            this.ByActivityButton = new Button() { Text = "User's activity" };
-            //this.SearchPicker.AddItem(this.ByActivityButton);
-
-            this.ByAuthorButton = new Button() { Text = "By author" };
-            this.SearchPicker.AddItem(this.ByAuthorButton);
-
-            this.InQuestionsButton = new Button() { Text = "In questions" };
-            this.SearchPicker.AddItem(this.InQuestionsButton);
-
-            //Selected search type
+            //this.SearchPicker.AddItem(this.ByActivityButton = new Button() { Text = "User's activity" });
+            this.SearchPicker.AddItem(this.ByAuthorButton = new Button() { Text = "By author" });
+            this.SearchPicker.AddItem(this.InQuestionsButton = new Button() { Text = "In questions" });
             this.SearchPicker.SelectedItem = this.InQuestionsButton;
 
             //Source
-            this.SourceButton = new DropDownButton();
+            this.ToolBar.AddChild(this.SourceButton = new DropDownButton());
             this.SourceButton.Backgrounds.AddRange(new Background[]{
                 new Background(this.ButtonEdge, BackgroundPosition.Left),
                 new Background(this.ButtonEdge, BackgroundPosition.Right, SpriteEffects.FlipHorizontally),
                 new Background(this.ButtonBackground),
                 new Background(this.ButtonIndicator, BackgroundPosition.Center)
             });
-
-            this.ToolBar.AddChild(this.SourceButton);
-
-            //Sources
-            this.MetaButton = new Button() { Text = "Meta" };
-            this.SourceButton.AddItem(this.MetaButton);
-
-            this.StackAppsButton = new Button() { Text = "Stack Apps" };
-            this.SourceButton.AddItem(this.StackAppsButton);
-
-            this.SuperUserButton = new Button() { Text = "Super User" };
-            this.SourceButton.AddItem(this.SuperUserButton);
-
-            this.ServerFaultButton = new Button() { Text = "Server Fault" };
-            this.SourceButton.AddItem(this.ServerFaultButton);
-
-            this.StackOverflowButton = new Button() { Text = "Stack Overflow" };
-            this.SourceButton.AddItem(this.StackOverflowButton);
+            this.SourceButton.AddItem(this.MetaButton = new Button() { Text = "Meta" });
+            this.SourceButton.AddItem(this.StackAppsButton = new Button() { Text = "Stack Apps" });
+            this.SourceButton.AddItem(this.SuperUserButton = new Button() { Text = "Super User" });
+            this.SourceButton.AddItem(this.ServerFaultButton = new Button() { Text = "Server Fault" });
+            this.SourceButton.AddItem(this.StackOverflowButton = new Button() { Text = "Stack Overflow" });
+            this.SourceButton.SelectedItem = this.StackOverflowButton;
+            this.SourceButton.SelectedItemChanged += new EventHandler<SelectedItemChangedEventArgs>((sender, e) => this.ReloadAndPopulate());
 
             //Loading
-            this.ProgressLabel = new Button() {
+            this.ToolBar.AddChild(this.ProgressLabel = new Button() {
                 Text = "Ready",
                 TextShadow = new TextShadow() {
                     Opacity = 0
                 },
                 Font = this.SmallUIFont,
                 Padding = new Thickness(14, 9, 0, 9)
-            };
-            this.ToolBar.AddChild(this.ProgressLabel);
-
-            this.ProgressIndicator = new ImageBox() {
+            });
+            this.ToolBar.AddChild(this.ProgressIndicator = new ImageBox() {
                 Image = this.Wheel,
                 Padding = new Thickness(14, 0, 0, 0),
                 IsVisible = false
-            };
-            this.ToolBar.AddChild(this.ProgressIndicator);
-
+            });
             Animator.Animations.Add(new Animation(this.ProgressIndicator, "Rotation", 0f, (float)Math.PI, new TimeSpan(0, 0, 1), Interpolators.Linear) {
                 Repetitions = -1
             });
 
-            //Defaults
-            this.RequestTypeButton.SelectedItem = this.BrowseButton;
-            this.SourceButton.SelectedItem = this.StackOverflowButton;
 
-            //4-item DropDownButton styling
+            //Generic DropDownButton styling
             foreach (var dropDown in new DropDownButton[] { this.ZOrderButton, this.ROrderButton, this.SourceButton }) {
-                
+                dropDown.Backgrounds.Add(new Background(this.ButtonIndicator, BackgroundPosition.Center));
                 dropDown.Button.Padding = new Thickness(12, 10, 0, 10);
                 dropDown.Button.Size = new Vector2(-1, 28);
                 dropDown.DropDownMenu.Backgrounds.AddRange(new Background[]{
@@ -249,8 +207,9 @@ namespace SpaceOverflow
                 splitButton.SelectedItemChanged += new EventHandler<SelectedItemChangedEventArgs>((sender, e) => {
                     if (e.OldSelectedChild != null) e.OldSelectedChild.Backgrounds.Remove(this.IndicatorBackground);
                     if (e.NewSelectedChild != null) e.NewSelectedChild.Backgrounds.Add(this.IndicatorBackground);
-                    this.ReloadAndPopulate();
                 });
+
+                splitButton.SelectedItem.Backgrounds.Add(this.IndicatorBackground);
             }
 
             //SplitButton-like StackPanels
@@ -267,37 +226,11 @@ namespace SpaceOverflow
                 }
             }
 
-            this.RequestTypeButton.SelectedItemChanged += new EventHandler<SelectedItemChangedEventArgs>((sender, e) => {
-                if (e.OldSelectedChild != e.NewSelectedChild) 
-                    if (e.NewSelectedChild == this.BrowseButton) this.ToolBar.RemoveChild(this.SearchOptions);
-                    else this.ToolBar.InsertChild(1, this.SearchOptions);
-            });
-
-            this.RequestTypeButton.SelectedItem = this.BrowseButton;
-
             //DropDownButton item paddings
             foreach (var item in new Container[] { this.SearchPicker, this.SourceButton, this.ZOrderButton, this.ROrderButton }.SelectMany(container => container.Items)) {
                 item.Padding = new Thickness(5, 10, 0, 10);
-                item.Size = new Vector2(-1, 32);
+                item.Size = new Vector2(-1, 27);
             }
-
-
-            //Event handlers
-            this.SearchBox.KeyPressed += new KeyEventHandler((sender, e) => {
-                if (e.KeyCode == Microsoft.Xna.Framework.Input.Keys.Enter && this.SearchBox.Text != "") this.ReloadAndPopulate();
-            });
-            this.SearchPicker.SelectedItemChanged += new EventHandler<SelectedItemChangedEventArgs>((sender, e) => {
-                if (this.SearchBox.Text != "") this.ReloadAndPopulate();
-            });
-            this.ZOrderButton.SelectedItemChanged += new EventHandler<SelectedItemChangedEventArgs>((sender, e) =>
-                this.ReloadAndPopulate());
-            this.ROrderButton.SelectedItemChanged += new EventHandler<SelectedItemChangedEventArgs>((sender, e) => 
-                this.ReMap());
-            this.SourceButton.SelectedItemChanged += new EventHandler<SelectedItemChangedEventArgs>((sender, e) => this.ReloadAndPopulate());
-
-            //Defaults
-            Animator.Animations.Add(new Animation(this.ProgressLabel, "Padding.Left", 100, new TimeSpan(0, 0, 3), Interpolators.QuadraticInOut));
-            
 
             //Arrange and position
             this.ToolBar.Arrange();

@@ -39,7 +39,7 @@ namespace SpaceOverflow
 
                             if (opacity > 0) this.TextBatch.DrawText(question.Text,
                                       World * Matrix.CreateTranslation(question.Position),
-                                      new Color(1, 1, 1, mapOpacity(question.Position.Z)));
+                                      new Color(1, 1, 1, opacity));
                         }
 
                 } this.TextBatch.End();

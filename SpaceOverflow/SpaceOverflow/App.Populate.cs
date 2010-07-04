@@ -141,11 +141,13 @@ namespace SpaceOverflow
         protected void CreateMappers(IEnumerable<Question> questions) {
             Func<Question, float> zCriterionSelector = null;
             float minZ, maxZ;
+            int counter = 0;
 
             if (this.ZOrderButton.SelectedItem == this.ZCreationButton) zCriterionSelector = new Func<Question, float>(q => (float)q.CreationDate.ToUnixTimestamp());
-            else if (this.ZOrderButton.SelectedItem == this.ZFeaturedButton) zCriterionSelector = new Func<Question, float>(q => 1f);
+            else if (this.ZOrderButton.SelectedItem == this.ZFeaturedButton) zCriterionSelector = new Func<Question, float>(q =>
+                counter--);
             else if (this.ZOrderButton.SelectedItem == this.ZVotesButton) zCriterionSelector = new Func<Question, float>(q => q.UpVoteCount - q.DownVoteCount);
-            else if (this.ZOrderButton.SelectedItem == this.ZHotButton) zCriterionSelector = new Func<Question, float>(q => 1f);
+            else if (this.ZOrderButton.SelectedItem == this.ZHotButton) zCriterionSelector = new Func<Question, float>(q => counter--);
             else if (this.ZOrderButton.SelectedItem == this.ZActiveButton) zCriterionSelector = new Func<Question, float>(q => q.LastActivityDate.Ticks);
 
             minZ = questions.Min(zCriterionSelector);
@@ -292,7 +294,7 @@ namespace SpaceOverflow
                 Position = this.QuestionMapper(q),
                 Size = this.SpriteQuestionFont.MeasureString(q.Title),
                 Text = this.VectorQuestionFont.Fill(q.Title)
-            }).Union(this.Questions);
+            }).Union(this.Questions).ToList();
 
             lock (this.Questions) this.Questions.AddRange(questionsInSpace);
         }
