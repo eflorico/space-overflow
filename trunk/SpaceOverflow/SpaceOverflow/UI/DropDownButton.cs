@@ -40,9 +40,7 @@ namespace SpaceOverflow.UI
             base.OnSelectedItemChanged(oldSelectedItem, newSelectedItem);
 
             if (oldSelectedItem != null) {
-                this.DropDownMenu.AddChild(oldSelectedItem);
-                this.DropDownMenu.Children.Remove(oldSelectedItem);
-                this.DropDownMenu.Children.Insert(this.Items.IndexOf(oldSelectedItem), oldSelectedItem);
+                this.DropDownMenu.InsertChild(this.Items.IndexOf(oldSelectedItem), oldSelectedItem);
             }
             if (newSelectedItem != null) {
                 this.DropDownMenu.RemoveChild(newSelectedItem);
@@ -64,12 +62,18 @@ namespace SpaceOverflow.UI
 
         public bool IsDropped {
             get { return this.DropDownMenu.IsVisible; }
-            set { this.DropDownMenu.IsVisible = value; }
+            set { this.OnDropping(); this.DropDownMenu.IsVisible = value; }
+        }
+
+        protected void OnDropping() {
+            if (this.Dropping != null) this.Dropping(this, EventArgs.Empty);
         }
 
         public Texture2D SelectedIndicator { get; set; }
         public StackPanel DropDownMenu { get; private set; }
         public Button Button { get; private set; }
+
+        public event EventHandler Dropping;
 
         public override void Arrange() {
             this.DropDownMenu.AddChild(this.SelectedItem); //Temporarily add selected item for inheritance

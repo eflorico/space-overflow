@@ -35,6 +35,26 @@ namespace SpaceOverflow.Effects
             }
         }
 
+        public static Interpolator QuadraticInOut {
+            get {
+                return new Interpolator((origFrom, origTo, origProgress) =>
+                    Interpolators.InterpolateNumeric(origFrom, origTo, origProgress,
+                        new NumericInterpolator((from, to, progress) => {
+                            if (progress < 0.5f) {
+                                to -= (to - from) / 2f;
+                                progress *= 2f;
+                                return from + (to - from) * progress * progress;
+                            }
+                            else {
+                                from += (to - from) / 2f;
+                                progress = (progress - 0.5f) * 2f;
+                                return from - (to - from) * (progress - 2) * progress;
+                            }
+                        })
+                ));
+            }
+        }
+
         public static Interpolator CubicIn {
             get {
                 return new Interpolator((origFrom, origTo, origProgress) =>

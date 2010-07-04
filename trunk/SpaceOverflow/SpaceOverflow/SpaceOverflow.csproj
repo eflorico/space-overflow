@@ -114,7 +114,7 @@
     <Compile Include="UI\EventInput.cs" />
     <Compile Include="UI\Focusable.cs" />
     <Compile Include="UI\Picker.cs" />
-    <Compile Include="UI\SelectedChildChangedEventArgs.cs" />
+    <Compile Include="UI\SelectedItemChangedEventArgs.cs" />
     <Compile Include="UI\TextBox.cs" />
     <Compile Include="UI\TextShadow.cs" />
     <Compile Include="UI\UIElement.cs" />

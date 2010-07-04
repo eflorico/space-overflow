@@ -48,24 +48,7 @@ namespace SpaceOverflow
         Texture2D SpaceBackground, God;
 
         //UI
-        UIManager UIManager;
-            StackPanel ToolBar;
-                SplitButton RequestTypeButton;
-                    Button BrowseButton, SearchButton;
-                SplitButton BrowseOptions;
-                    Button CreationButton, FeaturedButton, VotesButton, HotButton, ActiveButton;
-                StackPanel SearchOptions;
-                    TextBox SearchBox;
-                    DropDownButton SearchPicker;
-                        Button InQuestionsButton, ByAuthorButton, ByActivityButton;
-                DropDownButton SourceButton;
-                    Button StackOverflowButton, ServerFaultButton, SuperUserButton, MetaButton, StackAppsButton;
-                    Button ProgressLabel;
-                    ImageBox ProgressIndicator;
-        BrowserOverlay Browser;
-
-
-        Background IndicatorBackground, TextBoxIndicatorBackground;
+        
 
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload

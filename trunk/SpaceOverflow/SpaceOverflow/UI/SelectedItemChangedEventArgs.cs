@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SpaceOverflow.UI
 {
-    public class SelectedChildChangedEventArgs : EventArgs
+    public class SelectedItemChangedEventArgs : EventArgs
     {
         public UIElement NewSelectedChild { get; set; }
         public UIElement OldSelectedChild { get; set; }

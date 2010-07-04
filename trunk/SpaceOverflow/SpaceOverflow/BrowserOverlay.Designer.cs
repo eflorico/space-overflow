@@ -28,8 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BrowserOverlay));
             System.Windows.Forms.ToolStripButton CloseButton;
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BrowserOverlay));
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.BackButton = new System.Windows.Forms.ToolStripButton();
             this.ForwardButton = new System.Windows.Forms.ToolStripButton();
@@ -37,6 +37,17 @@
             CloseButton = new System.Windows.Forms.ToolStripButton();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // CloseButton
+            // 
+            CloseButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            CloseButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            CloseButton.Image = ((System.Drawing.Image)(resources.GetObject("CloseButton.Image")));
+            CloseButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            CloseButton.Name = "CloseButton";
+            CloseButton.Size = new System.Drawing.Size(40, 22);
+            CloseButton.Text = "Close";
+            CloseButton.Click += new System.EventHandler(this.CloseButton_Click);
             // 
             // toolStrip1
             // 
@@ -72,17 +83,6 @@
             this.ForwardButton.Text = "Forward";
             this.ForwardButton.Click += new System.EventHandler(this.ForwardButton_Click);
             // 
-            // CloseButton
-            // 
-            CloseButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            CloseButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            CloseButton.Image = ((System.Drawing.Image)(resources.GetObject("CloseButton.Image")));
-            CloseButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            CloseButton.Name = "CloseButton";
-            CloseButton.Size = new System.Drawing.Size(40, 22);
-            CloseButton.Text = "Close";
-            CloseButton.Click += new System.EventHandler(this.CloseButton_Click);
-            // 
             // WebBrowser
             // 
             this.WebBrowser.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
@@ -104,6 +104,7 @@
             this.ControlBox = false;
             this.Controls.Add(this.WebBrowser);
             this.Controls.Add(this.toolStrip1);
+            this.Cursor = System.Windows.Forms.Cursors.Arrow;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.MaximizeBox = false;
             this.MinimizeBox = false;

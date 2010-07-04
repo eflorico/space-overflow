@@ -24,7 +24,7 @@ namespace SpaceOverflow.UI
 
         protected virtual void OnSelectedItemChanged(UIElement oldSelectedItem, UIElement newSelectedItem) {
             if (this.SelectedItemChanged != null)
-                this.SelectedItemChanged(this, new SelectedChildChangedEventArgs() {
+                this.SelectedItemChanged(this, new SelectedItemChangedEventArgs() {
                     OldSelectedChild = oldSelectedItem,
                     NewSelectedChild = newSelectedItem
                 });
@@ -42,6 +42,6 @@ namespace SpaceOverflow.UI
             if (this.SelectedItem == item) this.SelectedItem = null;
         }
 
-        public event EventHandler<SelectedChildChangedEventArgs> SelectedItemChanged;
+        public event EventHandler<SelectedItemChangedEventArgs> SelectedItemChanged;
     }
 }
