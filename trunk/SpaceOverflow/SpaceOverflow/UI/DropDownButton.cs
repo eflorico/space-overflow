@@ -93,8 +93,8 @@ namespace SpaceOverflow.UI
                 var dropDownSize = this.DropDownMenu.Measure();
 
                 this.DropDownMenu.Position = new Vector2(
-                    this.Bounds.Center.X - dropDownSize.X / 2,
-                    this.Position.Y - 4 - dropDownSize.Y
+                    this.Bounds.Center.X - (int)dropDownSize.X / 2,
+                    this.Position.Y - 4 - (int)dropDownSize.Y
                     );
 
                 this.DropDownMenu.Arrange();

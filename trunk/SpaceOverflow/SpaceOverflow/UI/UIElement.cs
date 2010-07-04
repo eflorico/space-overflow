@@ -204,11 +204,9 @@ namespace SpaceOverflow.UI
             //Detect click
             if (this.Bounds.Contains(new Point(mouseState.X, mouseState.Y)))
                 if (mouseState.LeftButton == ButtonState.Pressed && lastMouseState.LeftButton == ButtonState.Released)
-                    this.clicked = true;
-                else if (mouseState.LeftButton == ButtonState.Released && lastMouseState.LeftButton == ButtonState.Pressed && this.clicked) {
-                    this.OnClicked();
-                    this.clicked = false;
-                }
+                    this.OnMouseDown(new Vector2(mouseState.X, mouseState.Y) - this.Position);
+                else if (mouseState.LeftButton == ButtonState.Released && lastMouseState.LeftButton == ButtonState.Pressed)
+                    this.OnMouseUp(new Vector2(mouseState.X, mouseState.Y) - this.Position);
 
             //Pass on to children
             for (var i = 0; i < this.Children.Count; ++i) {
@@ -218,20 +216,31 @@ namespace SpaceOverflow.UI
             }
         }
 
-        public virtual void HandleCharacterInput(CharacterEventArgs evArgs) { }
-        public virtual void HandleKeyStroke(KeyEventArgs evArgs) { }
-
-        protected virtual void OnClicked() {
-            if (this.Clicked != null) this.Clicked(this, EventArgs.Empty);
+        protected virtual void OnClicked(Vector2 position) {
+            if (this.Clicked != null) this.Clicked(this, new MouseEventArgs() { Position = position });
 
             if (this.Manager != null && this is Focusable) this.Manager.Focus = (Focusable)this;
             else if (this.Manager != null) this.Manager.Focus = null;
-            
+        }
+
+        protected virtual void OnMouseDown(Vector2 position) {
+            if (this.MouseDown != null) this.MouseDown(this, new MouseEventArgs() { Position = position });
+            this.clicked = true;
+        }
+
+        protected virtual void OnMouseUp(Vector2 position) {
+            if (this.MouseUp != null) this.MouseUp(this, new MouseEventArgs() { Position = position });
+
+            if (this.clicked) {
+                this.OnClicked(position);
+                this.clicked = false;
+            }
         }
 
         private bool clicked;
-        public event EventHandler Clicked;
-
+        public event MouseEventHandler Clicked;
+        public event MouseEventHandler MouseDown;
+        public event MouseEventHandler MouseUp;
     }
 
     
