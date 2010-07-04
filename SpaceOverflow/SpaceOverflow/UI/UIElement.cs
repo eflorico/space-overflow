@@ -8,21 +8,27 @@ using Microsoft.Xna.Framework.Input;
 
 namespace SpaceOverflow.UI
 {
+    /// <summary>
+    /// A graphical UI element.
+    /// </summary>
     public abstract class UIElement
     {
         public UIElement() {
             this.Children = new List<UIElement>();
             this.Backgrounds = new List<Background>();
             this.IsVisible = true;
+            this.Size = new Vector2(-1, -1);
         }
 
-        private Vector2 _position, _size = new Vector2(-1, -1);
-        private Thickness _padding;
         private UIElement _parent;
         private SpriteFont _font;
         private Color? _foreground;
         private TextShadow _textShadow;
-        
+        private UIManager _manager;
+
+        /// <summary>
+        /// Gets or sets the visual parent of the element. It is not necessary to call AddChild/RemoveChild on the parent when the parent is set using this property.
+        /// </summary>
         public UIElement Parent {
             get {
                 return this._parent;
@@ -30,19 +36,33 @@ namespace SpaceOverflow.UI
             set {
                 var oldParent = this._parent;
                 this._parent = value;
-                if (oldParent != null && oldParent.Children.Contains(this)) oldParent.RemoveChild(this);
+                if (oldParent != null && oldParent.Children.Contains(this)) oldParent.RemoveChild(this); //Remove from old parent
                 if (value != null) {
-                    if (!value.Children.Contains(this)) value.AddChild(this);
-                    this.Manager = value.Manager;
-                    this.Children.ForEach(child => child.Manager = this.Manager);
+                    if (!value.Children.Contains(this)) value.AddChild(this); //Add to new parent
+                    this.Manager = value.Manager; //Copy manager from parent
                 }
             }
         }
 
-        public UIManager Manager { get; set; }
+        /// <summary>
+        /// The UIManager that manages the focus for this element. Is automatically passed on to children when set.
+        /// </summary>
+        public UIManager Manager {
+            get { return this._manager; }
+            set {
+                this.Children.ForEach(child => child.Manager = value);
+                this._manager = value;
+            }
+        }
 
+        /// <summary>
+        /// List of visual children. Use Add-/Insert-/RemoveChild to modify!!
+        /// </summary>
         public List<UIElement> Children { get; private set; }
 
+        /// <summary>
+        /// Adds a visual child.
+        /// </summary>
         public virtual void AddChild(UIElement child) {
             if (child == null) throw new ArgumentNullException("child");
             else if (child == this) throw new ArgumentOutOfRangeException("child", "child cannot be this");
@@ -52,6 +72,9 @@ namespace SpaceOverflow.UI
             if (child.Parent != this) child.Parent = this;
         }
 
+        /// <summary>
+        /// Inserts a visual child at the given index.
+        /// </summary>
         public void InsertChild(int index, UIElement child) {
             if (child == null) throw new ArgumentNullException("child");
             else if (child == this) throw new ArgumentOutOfRangeException("child", "child cannot be this");
@@ -61,30 +84,29 @@ namespace SpaceOverflow.UI
             if (child.Parent != this) child.Parent = this;
         }
 
+        /// <summary>
+        /// Removes a visual child.
+        /// </summary>
+        /// <param name="child"></param>
         public virtual void RemoveChild(UIElement child) {
             this.Children.Remove(child);
 
             if (child.Parent == this) child.Parent = null;
         }
 
-        public Vector2 Position {
-            get {
-                return this._position;
-            }
-            set {
-                this._position = value;
-            }
-        }
+        /// <summary>
+        /// The position of the element, in global coordinates.
+        /// </summary>
+        public Vector2 Position { get; set; }
 
-        public Vector2 Size {
-            get {
-                return this._size;
-            }
-            set {
-                this._size = value;
-            }
-        }
+        /// <summary>
+        /// The desired size of the element, not including the padding. Set negative value for dimension to allow arbitrary size.
+        /// </summary>
+        public Vector2 Size { get; set; }
 
+        /// <summary>
+        /// The bounds of the element, in global coordinates, not including the padding.
+        /// </summary>
         public Rectangle Bounds
         {
             get
@@ -94,15 +116,14 @@ namespace SpaceOverflow.UI
             }
         }
 
-        public Thickness Padding {
-            get {
-                return this._padding;
-            }
-            set {
-                this._padding = value;
-            }
-        }
+        /// <summary>
+        /// Space between outer element box and element content.
+        /// </summary>
+        public Thickness Padding { get; set; }
 
+        /// <summary>
+        /// The font used on this element. Value is inherited to visual children.
+        /// </summary>
         public SpriteFont Font {
             get {
                 if (this._font != null) return this._font;
@@ -114,6 +135,9 @@ namespace SpaceOverflow.UI
             }
         }
 
+        /// <summary>
+        /// The foreground color used on this element. Value is inherited to visual children.
+        /// </summary>
         public Color? Foreground {
             get {
                 if (this._foreground.HasValue) return this._foreground.Value;
@@ -125,6 +149,9 @@ namespace SpaceOverflow.UI
             }
         }
 
+        /// <summary>
+        /// The text shadow that is applied to any text drawn by this element. Value is inherited to visual children.
+        /// </summary>
         public TextShadow TextShadow {
             get {
                 if (this._textShadow != null) return this._textShadow;
@@ -136,9 +163,19 @@ namespace SpaceOverflow.UI
             }
         }
 
+        /// <summary>
+        /// Determines if the element is drawn. Element will still be arranged if set to false!
+        /// </summary>
         public bool IsVisible { get; set; }
+
+        /// <summary>
+        /// List of backgrounds. Drawn in specified order.
+        /// </summary>
         public List<Background> Backgrounds { get; private set; }
 
+        /// <summary>
+        /// Positions the element's visual children.
+        /// </summary>
         public virtual void Arrange() {
             foreach (var child in this.Children) {
                 child.Position = this.Position;
@@ -146,26 +183,41 @@ namespace SpaceOverflow.UI
             }
         }
 
+        /// <summary>
+        /// Measures the element (not including padding). May depend on preceding Arrange call.
+        /// </summary>
         public abstract Vector2 Measure();
 
+        /// <summary>
+        /// Draws the element to the specified SpriteBatch.
+        /// </summary>
+        /// <param name="target"></param>
         public void DrawTo(SpriteBatch target) {
             if (this.IsVisible) this.DrawOverride(target);
         }
 
+        /// <summary>
+        /// Virtual function to draw element.
+        /// </summary>
         protected virtual void DrawOverride(SpriteBatch target) {
             this.DrawBackgrounds(target);
             this.DrawChildren(target);
         }
 
+        /// <summary>
+        /// Draws the element's backgrounds.
+        /// </summary>
+        /// <param name="target"></param>
         protected void DrawBackgrounds(SpriteBatch target) {
-            var fillRect = this.Bounds;
+            var fillRect = this.Bounds; //Target rectangle for background
 
             foreach (var background in this.Backgrounds)
                 if (background.Position == BackgroundPosition.Fill)
                     target.Draw(background.Texture, fillRect, Color.White);
-                else {
+                else { 
                     var rect = this.Bounds;
 
+                    //Determine target rectangle fot this background and make fillRect smaller so that following backgrounds don't overlap
                     if (background.Position == BackgroundPosition.Left) {
                         rect.Width = background.Texture.Width;
                         fillRect.X += background.Texture.Width;
@@ -195,11 +247,19 @@ namespace SpaceOverflow.UI
                 }
         }
 
+        /// <summary>
+        /// Calls DrawTo on the element's children.
+        /// </summary>
+        /// <param name="target"></param>
         protected void DrawChildren(SpriteBatch target) {
             foreach (var child in this.Children)
                 child.DrawTo(target);
         }
 
+        /// <summary>
+        /// Processes any mouse input.
+        /// </summary>
+        /// <returns>Returns true if input could be applied on the element or one of its children.</returns>
         public virtual bool HandleMouse(MouseState mouseState, MouseState lastMouseState) {
             var mousePoint = new Point(mouseState.X, mouseState.Y);
 
@@ -230,6 +290,8 @@ namespace SpaceOverflow.UI
             else if (this.Manager != null) this.Manager.Focus = null;
         }
 
+        private bool clicked;
+
         protected virtual void OnMouseDown(Vector2 position) {
             if (this.MouseDown != null) this.MouseDown(this, new MouseEventArgs() { Position = position });
             this.clicked = true;
@@ -244,7 +306,7 @@ namespace SpaceOverflow.UI
             }
         }
 
-        private bool clicked;
+        
         public event MouseEventHandler Clicked;
         public event MouseEventHandler MouseDown;
         public event MouseEventHandler MouseUp;
