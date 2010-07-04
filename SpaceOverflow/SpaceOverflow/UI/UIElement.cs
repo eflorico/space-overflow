@@ -200,20 +200,27 @@ namespace SpaceOverflow.UI
                 child.DrawTo(target);
         }
 
-        public virtual void HandleMouse(MouseState mouseState, MouseState lastMouseState) {
-            //Detect click
-            if (this.Bounds.Contains(new Point(mouseState.X, mouseState.Y)))
+        public virtual bool HandleMouse(MouseState mouseState, MouseState lastMouseState) {
+            var mousePoint = new Point(mouseState.X, mouseState.Y);
+
+            //Pass on to children
+            for (var i = 0; i < this.Children.Count; ++i) {
+                var child = this.Children[i];
+                if (child.HandleMouse(mouseState, lastMouseState)) return true;
+                if (this.Children.Count <= i || this.Children[i] != child) --i;
+            }
+
+            //Hit test
+            if (this.Bounds.Contains(mousePoint)) {
+                //Detect click
                 if (mouseState.LeftButton == ButtonState.Pressed && lastMouseState.LeftButton == ButtonState.Released)
                     this.OnMouseDown(new Vector2(mouseState.X, mouseState.Y) - this.Position);
                 else if (mouseState.LeftButton == ButtonState.Released && lastMouseState.LeftButton == ButtonState.Pressed)
                     this.OnMouseUp(new Vector2(mouseState.X, mouseState.Y) - this.Position);
 
-            //Pass on to children
-            for (var i = 0; i < this.Children.Count; ++i) {
-                var child = this.Children[i];
-                child.HandleMouse(mouseState, lastMouseState);
-                if (this.Children.Count <= i || this.Children[i] != child) --i;
+                return this.Children.Count == 0;
             }
+            else return false;
         }
 
         protected virtual void OnClicked(Vector2 position) {

@@ -120,9 +120,10 @@ namespace SpaceOverflow.UI
             base.DrawChildren(target);
         }
 
-        public override void HandleMouse(MouseState mouseState, MouseState lastMouseState) {
-            this.Button.HandleMouse(mouseState, lastMouseState);
-            if (this.IsDropped) this.DropDownMenu.HandleMouse(mouseState, lastMouseState);
+        public override bool HandleMouse(MouseState mouseState, MouseState lastMouseState) {
+            if (this.Button.HandleMouse(mouseState, lastMouseState) && !this.IsDropped) return true;
+            if (this.IsDropped) return this.DropDownMenu.HandleMouse(mouseState, lastMouseState);
+            else return false;
         }
     }
 }
