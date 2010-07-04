@@ -15,7 +15,8 @@ namespace SpaceOverflow.UI
 
         public void AddItem(UIElement item) {
             if (item == null) throw new ArgumentNullException("item");
-
+            if (this.Items.Contains(item)) throw new ArgumentException("Item cannot be added twice!");
+            
             this.Items.Add(item);
             this.OnItemAdded(item);
         }

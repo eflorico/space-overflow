@@ -5,13 +5,14 @@ using Microsoft.Xna.Framework;
 using StackExchange;
 using System.Threading;
 using System.Diagnostics;
+using SpaceOverflow.Effects;
 
 namespace SpaceOverflow
 {
     partial class App
     {
         List<QuestionInSpace> Questions;
-        Func<Question, QuestionInSpace> QuestionMapper;
+        Func<Question, Vector3> QuestionMapper;
         Func<Question, float> ZMapper, RMapper, ThetaMapper;
         QuestionsRequestBase CurrentRequest;
 
@@ -47,10 +48,19 @@ namespace SpaceOverflow
 
             try {
                 this.CurrentRequest.BeginGetResponse(response => {
-                    this.ExpandPopulation(response.Items);
-                    if (this.Questions.Count == 0) this.ProgressLabel.Text = "No questions found";
-                    else this.ProgressLabel.Text = "Ready";
-                    this.ProgressIndicator.IsVisible = false;
+                    try {
+                        this.ExpandPopulation(response.Items);
+                        if (this.Questions.Count == 0) this.ProgressLabel.Text = "No questions found";
+                        else this.ProgressLabel.Text = "Ready";
+                        this.ProgressIndicator.IsVisible = false;
+                    }
+                    catch (Exception ex) {
+                        Debug.Print("Error while loading quetions:");
+                        Debug.Print(ex.ToString());
+
+                        this.ProgressLabel.Text = "Error";
+                        this.ProgressIndicator.IsVisible = false;
+                    }
                 });
             }
             catch (Exception ex) {
@@ -61,8 +71,6 @@ namespace SpaceOverflow
                 this.ProgressIndicator.IsVisible = false;
             }
         }
-
-        
 
         protected void BeginLoadQuestions( Action<DataResponse<Question>> callback)
         {
@@ -82,11 +90,11 @@ namespace SpaceOverflow
             if (this.RequestTypeButton.SelectedItem == this.BrowseButton) {
                 var sort = QuestionSort.Creation;
 
-                if (this.BrowseOptions.SelectedItem == this.CreationButton) sort = QuestionSort.Creation;
-                else if (this.BrowseOptions.SelectedItem == this.FeaturedButton) sort = QuestionSort.Featured;
-                else if (this.BrowseOptions.SelectedItem == this.VotesButton) sort = QuestionSort.Votes;
-                else if (this.BrowseOptions.SelectedItem == this.HotButton) sort = QuestionSort.Hot;
-                else if (this.BrowseOptions.SelectedItem == this.ActiveButton) sort = QuestionSort.Activity;
+                if (this.ZOrderButton.SelectedItem == this.ZCreationButton) sort = QuestionSort.Creation;
+                else if (this.ZOrderButton.SelectedItem == this.ZFeaturedButton) sort = QuestionSort.Featured;
+                else if (this.ZOrderButton.SelectedItem == this.ZVotesButton) sort = QuestionSort.Votes;
+                else if (this.ZOrderButton.SelectedItem == this.ZHotButton) sort = QuestionSort.Hot;
+                else if (this.ZOrderButton.SelectedItem == this.ZActiveButton) sort = QuestionSort.Activity;
 
                 this.CurrentRequest = new QuestionsRequest(api) {
                     Sort = sort
@@ -131,38 +139,69 @@ namespace SpaceOverflow
         }
 
         protected void CreateMappers(IEnumerable<Question> questions) {
-            var minDate = questions.Min(q => q.CreationDate);
-            var maxDate = questions.Max(q => q.CreationDate);
+            Func<Question, float> zCriterionSelector = null;
+            float minZ, maxZ;
+
+            if (this.ZOrderButton.SelectedItem == this.ZCreationButton) zCriterionSelector = new Func<Question, float>(q => (float)q.CreationDate.ToUnixTimestamp());
+            else if (this.ZOrderButton.SelectedItem == this.ZFeaturedButton) zCriterionSelector = new Func<Question, float>(q => 1f);
+            else if (this.ZOrderButton.SelectedItem == this.ZVotesButton) zCriterionSelector = new Func<Question, float>(q => q.UpVoteCount - q.DownVoteCount);
+            else if (this.ZOrderButton.SelectedItem == this.ZHotButton) zCriterionSelector = new Func<Question, float>(q => 1f);
+            else if (this.ZOrderButton.SelectedItem == this.ZActiveButton) zCriterionSelector = new Func<Question, float>(q => q.LastActivityDate.Ticks);
+
+            minZ = questions.Min(zCriterionSelector);
+            maxZ = questions.Max(zCriterionSelector);
 
             this.ZMapper = new Func<Question, float>(q => {
-                if ((maxDate - minDate).Ticks == 0) return 1;
+                if (maxZ - minZ == 0) return 1;
                 
-                var relativeValue = (float)(q.CreationDate.Ticks - minDate.Ticks);
-                var range = (float)(maxDate.Ticks - minDate.Ticks) ;
+                var relativeValue = (float)(zCriterionSelector(q) - minZ);
+                var range = (float)(maxZ - minZ) ;
                 var ret = relativeValue / range;
                 return ret;
             });
 
-            var minVotes = questions.Min(q => q.UpVoteCount - q.DownVoteCount);
-            var maxVotes = questions.Max(q => q.UpVoteCount - q.DownVoteCount);
 
-            this.RMapper = new Func<Question, float>(q =>
-                maxVotes - minVotes > 0 ? (float)(q.UpVoteCount - q.DownVoteCount - minVotes) / (float)(maxVotes - minVotes) : 1);
+            Func<Question, float> rCriterionSelector = null;
+            float minR, maxR;
+
+            if (this.ROrderButton.SelectedItem == this.RActiveButton) rCriterionSelector = new Func<Question, float>(q => q.LastActivityDate.Ticks);
+            else if (this.ROrderButton.SelectedItem == this.ROwnerReputationButton) rCriterionSelector = new Func<Question, float>(q => q.OwnerReputation);
+            else if (this.ROrderButton.SelectedItem == this.RVotesButton) rCriterionSelector = new Func<Question, float>(q => q.UpVoteCount - q.DownVoteCount);
+
+            minR = questions.Min(rCriterionSelector);
+            maxR = questions.Max(rCriterionSelector);
+
+            this.RMapper = new Func<Question, float>(q => {
+                if (maxR - minR == 0) return 1;
+
+                var relativeValue = (float)(rCriterionSelector(q) - minR);
+                var range = (float)(maxR - minR);
+                var ret = relativeValue / range;
+                return ret;
+            });
 
             this.ThetaMapper = new Func<Question, float>(q =>
                 q.ID * q.OwnerID % 143268);
 
-            this.QuestionMapper = new Func<Question, QuestionInSpace>(q => {
+            this.QuestionMapper = new Func<Question, Vector3>(q => {
                 var z = this.ZMapper(q) * 3000 - 3000;
                 var r = (1 - this.RMapper(q)) * 500;
                 var theta = this.ThetaMapper(q);
 
-                return new QuestionInSpace() {
-                    Question = q,
-                    Position = new Vector3(r * (float)Math.Cos(theta), r * (float)Math.Sin(theta), z),
-                    Size = this.SpriteQuestionFont.MeasureString(q.Title),
-                    Text = this.VectorQuestionFont.Fill(q.Title)
-                };
+                return new Vector3(r * (float)Math.Cos(theta), r * (float)Math.Sin(theta), z);
+                //return new QuestionInSpace() {
+                //    Question = q,
+                //    Position =,
+                //    Size = this.SpriteQuestionFont.MeasureString(q.Title),
+                //    Text = this.VectorQuestionFont.Fill(q.Title)
+                //};
+            });
+        }
+
+        protected void ReMap() {
+            this.CreateMappers(this.Questions.Select(qis => qis.Question));
+            this.Questions.ForEach(qis => {
+                Animator.Animations.Add(new Animation(qis, "Position", this.QuestionMapper(qis.Question), new TimeSpan(0, 0, 1), Interpolators.QuadraticInOut));
             });
         }
 
@@ -170,12 +209,16 @@ namespace SpaceOverflow
         {
             if (rawQuestions.Count() == 0) return;
 
-            var allRawQuestions = rawQuestions.Union(this.Questions.Select(qis => qis.Question));
+            this.CreateMappers(rawQuestions);
 
-            this.CreateMappers(allRawQuestions);
-            var mappedQuestions = allRawQuestions.Select(q => this.QuestionMapper(q)).ToList();
+            var questionsInSpace = rawQuestions.Select(q => new QuestionInSpace() {
+                Question = q,
+                Position = this.QuestionMapper(q),
+                Size = this.SpriteQuestionFont.MeasureString(q.Title),
+                Text = this.VectorQuestionFont.Fill(q.Title)
+            }).Union(this.Questions).ToList();
 
-            lock (this.Questions) this.Questions = mappedQuestions;
+            lock (this.Questions) this.Questions = questionsInSpace;
 
 #if false
             Avoid overlap!! :-)
@@ -244,9 +287,14 @@ namespace SpaceOverflow
         protected void ExpandPopulation(IEnumerable<Question> rawQuestions) {
             if (rawQuestions.Count() == 0) return;
 
-            var mappedQuestions = rawQuestions.Select(q => this.QuestionMapper(q));
+            var questionsInSpace = rawQuestions.Select(q => new QuestionInSpace() {
+                Question = q,
+                Position = this.QuestionMapper(q),
+                Size = this.SpriteQuestionFont.MeasureString(q.Title),
+                Text = this.VectorQuestionFont.Fill(q.Title)
+            }).Union(this.Questions);
 
-            lock (this.Questions) this.Questions.AddRange(mappedQuestions);
+            lock (this.Questions) this.Questions.AddRange(questionsInSpace);
         }
     }
 }
