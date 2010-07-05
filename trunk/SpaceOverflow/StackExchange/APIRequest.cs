@@ -15,6 +15,8 @@ namespace StackExchange
         public APIRequest(StackAPI api)
             : base(api) { }
 
+        
+
         protected abstract TResponse ProcessResponse(JObject response);
 
         protected TResponse ReceiveResponse(HttpWebResponse response) {
