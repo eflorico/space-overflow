@@ -8,10 +8,17 @@ namespace StackExchange
     public class QuestionsRequest : QuestionsRequestBase
     {
         public QuestionsRequest(StackAPI api)
-            : base(api) { }
+            : base(api) {
+            this.IDs = new List<int>();
+        }
+
+        public List<int> IDs { get; private set; }
 
         protected override string Route {
-            get { return "questions"; }
+            get {
+                if (this.IDs.Count > 0) return "questions/" + this.IDs.Aggregate("", (sum, item) => sum + item + ",");
+                else return "questions";
+            }
         }
     }
 }
