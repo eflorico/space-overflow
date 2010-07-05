@@ -39,8 +39,8 @@ namespace SpaceOverflow
 
         //Font resources
         VectorFont VectorQuestionFont;
-        SpriteFont SpriteQuestionFont, UIFont, SmallUIFont;
-        
+        SpriteFont QuestionFont, UIFont, SmallUIFont;
+
         //Texture resources
         Texture2D ToolBarBackground, ButtonBackground, ButtonEdge, ButtonSplit, ButtonIndicator;
         Texture2D TextBoxBackground, TextBoxEdge, TextBoxRoundedEdge, TextBoxIndicator;

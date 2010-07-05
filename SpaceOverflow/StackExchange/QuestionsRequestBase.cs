@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace StackExchange
 {
-    public abstract class QuestionsRequestBase : APIDataRequest<QuestionSort, Question>
+    public abstract class QuestionsRequestBase : APISortedDataRequest<Question, QuestionSort>
     {
         public QuestionsRequestBase(StackAPI api)
             : base(api) { }

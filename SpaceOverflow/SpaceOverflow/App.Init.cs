@@ -101,7 +101,7 @@ namespace SpaceOverflow
 
             //Load vector font :-)
             this.VectorQuestionFont = this.Content.Load<VectorFont>("VectorFont");
-            this.SpriteQuestionFont = this.Content.Load<SpriteFont>("SpriteFont");
+            this.QuestionFont = this.Content.Load<SpriteFont>("QuestionFont");
             this.UIFont = this.Content.Load<SpriteFont>("UIFont");
             this.SmallUIFont = this.Content.Load<SpriteFont>("SmallUIFont");
 

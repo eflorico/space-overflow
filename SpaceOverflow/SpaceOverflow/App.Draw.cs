@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace SpaceOverflow
 {
@@ -20,30 +22,67 @@ namespace SpaceOverflow
                 } this.SpriteBatch.End();
 
 
-                this.TextBatch.ViewProjection = this.View * this.Projection;
-                this.TextBatch.Begin(); {
-                    //[Far plane] .. Fade In .. [Far fade] .. Fully visible .. [Near fade] .. Fade out .. [Near pl
-                    var mapOpacity = new Func<float, float>(z => {
-                        float farBegin = this.FarPlane, farEnd = this.FarFade, nearEnd = this.NearFade, nearBegin = this.NearPlane;
-                        var distance = -this.View.Translation.Z - z;
+                //TODO: Make decision!
+                if (!this.vectorRendering) {
+                    this.TextBatch.ViewProjection = this.View * this.Projection;
+                    this.SpriteBatch.Begin();
+                    {
+                        //[Far plane] .. Fade In .. [Far fade] .. Fully visible .. [Near fade] .. Fade out .. [Near pl
+                        var mapOpacity = new Func<float, float>(z => {
+                            float farBegin = this.FarPlane, farEnd = this.FarFade, nearEnd = this.NearFade, nearBegin = this.NearPlane;
+                            var distance = -this.View.Translation.Z - z;
 
-                        if (distance >= farBegin || distance <= nearBegin) return 0; //Out of visible range
-                        else if (distance >= farEnd) return (-(distance - farEnd) + (farBegin - farEnd)) / (farBegin - farEnd); //Fade in at far plane
-                        else if (distance >= nearEnd) return 1; //Fully inside visible range
-                        else return (distance - nearBegin) / (nearEnd - nearBegin); //Fade in at near plane
-                    });
+                            if (distance >= farBegin || distance <= nearBegin) return 0; //Out of visible range
+                            else if (distance >= farEnd) return (-(distance - farEnd) + (farBegin - farEnd)) / (farBegin - farEnd); //Fade in at far plane
+                            else if (distance >= nearEnd) return 1; //Fully inside visible range
+                            else return (distance - nearBegin) / (nearEnd - nearBegin); //Fade in at near plane
+                        });
 
-                    lock (this.Questions)
-                        foreach (var question in this.Questions) {
-                            var opacity = mapOpacity(question.Position.Z);
+                        lock (this.Questions)
+                            foreach (var question in this.Questions) {
+                                var opacity = mapOpacity(question.Position.Z);
 
-                            if (opacity > 0) this.TextBatch.DrawText(question.Text,
-                                      World * Matrix.CreateTranslation(question.Position),
-                                      new Color(1, 1, 1, opacity));
-                        }
+                                if (opacity > 0) {
+                                    var realTextSize = question.Size;
+                                    var textSize = realTextSize / 5f;
+                                    var projectedBottomLeft = this.GraphicsDevice.Viewport.Project(question.Position, this.Projection, this.View, this.World);
+                                    var projectedTopRight = this.GraphicsDevice.Viewport.Project(question.Position + new Vector3(textSize, 0), this.Projection, this.View, this.World);
+                                    var positionTopLeft = new Vector2(projectedBottomLeft.X, projectedTopRight.Y);
+                                    var scale = (projectedTopRight.X - projectedBottomLeft.X) / realTextSize.X;
+                                    var color = new Color(Color.White, opacity);
 
-                } this.TextBatch.End();
+                                    this.SpriteBatch.DrawString(this.QuestionFont, question.Question.Title, positionTopLeft, color, 0f, new Vector2(), scale, SpriteEffects.None, 0);
+                                }
+                            }
 
+                    } this.SpriteBatch.End();
+                }
+                else {
+                    this.TextBatch.ViewProjection = this.View * this.Projection;
+                    this.TextBatch.Begin();
+                    {
+                        //[Far plane] .. Fade In .. [Far fade] .. Fully visible .. [Near fade] .. Fade out .. [Near pl
+                        var mapOpacity = new Func<float, float>(z => {
+                            float farBegin = this.FarPlane, farEnd = this.FarFade, nearEnd = this.NearFade, nearBegin = this.NearPlane;
+                            var distance = -this.View.Translation.Z - z;
+
+                            if (distance >= farBegin || distance <= nearBegin) return 0; //Out of visible range
+                            else if (distance >= farEnd) return (-(distance - farEnd) + (farBegin - farEnd)) / (farBegin - farEnd); //Fade in at far plane
+                            else if (distance >= nearEnd) return 1; //Fully inside visible range
+                            else return (distance - nearBegin) / (nearEnd - nearBegin); //Fade in at near plane
+                        });
+
+                        lock (this.Questions)
+                            foreach (var question in this.Questions) {
+                                var opacity = mapOpacity(question.Position.Z);
+
+                                if (opacity > 0) this.TextBatch.DrawText(question.Text,
+                                          this.World * Matrix.CreateTranslation(question.Position),
+                                          new Color(1, 1, 1, opacity));
+                            }
+
+                    } this.TextBatch.End();
+                }
                 //Draw god
                 var vertices = new VertexPositionTexture[] { 
                     new VertexPositionTexture(new Vector3(-100,+100,-20000), new Vector2(0, 0)),

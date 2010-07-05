@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace StackExchange
 {
-    public class UsersRequest : APIDataRequest<UserSort, User>
+    public class UsersRequest : APISortedDataRequest<User, UserSort>
     {
         public UsersRequest(StackAPI api)
             : base(api) { }

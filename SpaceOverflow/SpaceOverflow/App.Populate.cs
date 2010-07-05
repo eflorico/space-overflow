@@ -24,9 +24,9 @@ namespace SpaceOverflow
 
             try 
             {
-                this.BeginLoadQuestions(new Action<DataResponse<Question>>(response => {
+                this.BeginLoadQuestions(new Action<IEnumerable<Question>>(questions => {
                     lock (this.Questions) this.Questions.Clear();
-                    this.Repopulate(response.Items);
+                    this.Repopulate(questions);
                     this.Explode();
                     if (this.Questions.Count == 0) this.ProgressLabel.Text = "No questions found";
                     else this.ProgressLabel.Text = "Ready";
@@ -72,7 +72,7 @@ namespace SpaceOverflow
             }
         }
 
-        protected void BeginLoadQuestions( Action<DataResponse<Question>> callback)
+        protected void BeginLoadQuestions(Action<IEnumerable<Question>> callback)
         {
             StackAPI api = null;
 
@@ -107,7 +107,7 @@ namespace SpaceOverflow
                         InTitle = this.SearchBox.Text
                     };
                 }
-                else if (this.SearchPicker.SelectedItem == this.ByAuthorButton) {
+                else {
                     new UsersRequest(api) {
                         Filter = this.SearchBox.Text,
                         PageSize = 100
@@ -118,14 +118,17 @@ namespace SpaceOverflow
                             else return 0;
                         });
 
-                        this.CurrentRequest = new UsersQuestionsRequest(api) {
-                            UserID = user.First().ID,
-                            Sort = QuestionSort.Creation,
-                            Page = 1,
-                            PageSize = 100
-                        };
+                        if (this.SearchPicker.SelectedItem == this.ByAuthorButton) {
+                            this.CurrentRequest = new UsersQuestionsRequest(api) {
+                                UserID = user.First().ID,
+                                Sort = QuestionSort.Creation,
+                                Page = 1,
+                                PageSize = 100
+                            };
+                        }
+                        else ;
 
-                        this.CurrentRequest.BeginGetResponse(callback);
+                        this.CurrentRequest.BeginGetResponse(response2 => callback(response2.Items));
                     });
                 }
             }
@@ -134,7 +137,7 @@ namespace SpaceOverflow
                 this.CurrentRequest.PageSize = 100;
                 this.CurrentRequest.Page = 1;
 
-                this.CurrentRequest.BeginGetResponse(callback);
+                this.CurrentRequest.BeginGetResponse(response => callback(response.Items));
             }
         }
 
@@ -217,8 +220,8 @@ namespace SpaceOverflow
             var questionsInSpace = rawQuestions.Select(q => new QuestionInSpace() {
                 Question = q,
                 Position = this.QuestionMapper(q),
-                Size = this.SpriteQuestionFont.MeasureString(q.Title),
-                Text = this.VectorQuestionFont.Fill(q.Title)
+                Size = this.QuestionFont.MeasureString(q.Title),
+                Text = this.VectorQuestionFont.Fill(q.Title) //TODO: Drop if using sprite fonts only
             }).Union(this.Questions).ToList();
 
             lock (this.Questions) this.Questions = questionsInSpace;
@@ -293,8 +296,8 @@ namespace SpaceOverflow
             var questionsInSpace = rawQuestions.Select(q => new QuestionInSpace() {
                 Question = q,
                 Position = this.QuestionMapper(q),
-                Size = this.SpriteQuestionFont.MeasureString(q.Title),
-                Text = this.VectorQuestionFont.Fill(q.Title)
+                Size = this.QuestionFont.MeasureString(q.Title),
+                Text = this.VectorQuestionFont.Fill(q.Title) //TODO: Drop if using sprite fonts only
             }).Union(this.Questions).ToList();
 
             lock (this.Questions) this.Questions.AddRange(questionsInSpace);

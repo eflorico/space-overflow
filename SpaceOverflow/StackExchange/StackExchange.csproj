@@ -43,11 +43,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="APIDataRequest.cs" />
+    <Compile Include="TimelineItem.cs" />
+    <Compile Include="APIPagedDataRequest.cs" />
     <Compile Include="APIObject.cs" />
     <Compile Include="APIRequest.cs" />
     <Compile Include="APIRequestBase.cs" />
-    <Compile Include="DataResponse.cs" />
+    <Compile Include="APISortedDataRequest.cs" />
+    <Compile Include="APIDataResponse.cs" />
     <Compile Include="QuestionsRequest.cs" />
     <Compile Include="QuestionsRequestBase.cs" />
     <Compile Include="SearchRequest.cs" />
@@ -55,6 +57,7 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="Question.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TimelineRequest.cs" />
     <Compile Include="User.cs" />
     <Compile Include="UsersQuestionsRequest.cs" />
     <Compile Include="UsersRequest.cs" />

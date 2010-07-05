@@ -57,8 +57,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SpriteFont.spritefont">
-      <Name>SpriteFont</Name>
+    <Compile Include="QuestionFont.spritefont">
+      <Name>QuestionFont</Name>
       <Importer>FontDescriptionImporter</Importer>
       <Processor>FontDescriptionProcessor</Processor>
     </Compile>

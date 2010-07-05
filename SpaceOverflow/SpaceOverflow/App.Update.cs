@@ -12,6 +12,7 @@ namespace SpaceOverflow
 {
     public partial class App
     {
+        bool vectorRendering = false;
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -19,6 +20,8 @@ namespace SpaceOverflow
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            if (Keyboard.GetState().IsKeyDown(Keys.R) && this.LastKeyboardState.IsKeyUp(Keys.R)) this.vectorRendering = !this.vectorRendering;
+
             if (this.State != AppState.BrowserOpened) {
                 if (!this.UpdateGUI()) this.UpdateSpace(gameTime);
 
@@ -73,7 +76,7 @@ namespace SpaceOverflow
                 //Zoom with mouse wheel
                 if (mouseState.ScrollWheelValue != LastMouseState.ScrollWheelValue) {
                     //Compute length (10 / nudge)
-                    var length = (mouseState.ScrollWheelValue - LastMouseState.ScrollWheelValue) / 6;
+                    var length = (mouseState.ScrollWheelValue - LastMouseState.ScrollWheelValue) / 4;
 
                     //Apply translation
                     this.View.Translation -= ray.Direction * length;
