@@ -13,6 +13,9 @@ namespace SpaceOverflow
     public partial class App
     {
         bool vectorRendering = false;
+        Vector2 MouseDownPosition;
+        Animation ZoomAnimation;
+
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -59,101 +62,118 @@ namespace SpaceOverflow
 
         protected void UpdateSpace(GameTime gameTime) {
             var mouseState = Mouse.GetState();
+            var keyboardState = Keyboard.GetState();
 
-            //If mouse was not processed by GUI
-            if (!this.ToolBar.Bounds.Contains(mouseState.X, mouseState.Y)) {
-                //Create ray at mouse position straight through 3D space
-                var nearFlat = new Vector3(mouseState.X, mouseState.Y, 0);
-                var farFlat = new Vector3(mouseState.X, mouseState.Y, -1);
-                var nearDeep = this.GraphicsDevice.Viewport.Unproject(nearFlat, this.Projection, this.View, this.World);
-                var farDeep = this.GraphicsDevice.Viewport.Unproject(farFlat, this.Projection, this.View, this.World);
+            //Create ray at mouse position straight through 3D space
+            var nearFlat = new Vector3(mouseState.X, mouseState.Y, 0);
+            var farFlat = new Vector3(mouseState.X, mouseState.Y, -1);
+            var nearDeep = this.GraphicsDevice.Viewport.Unproject(nearFlat, this.Projection, this.View, this.World);
+            var farDeep = this.GraphicsDevice.Viewport.Unproject(farFlat, this.Projection, this.View, this.World);
 
-                var direction = nearDeep - farDeep;
-                direction.Normalize();
+            var direction = nearDeep - farDeep;
+            direction.Normalize();
 
-                var ray = new Ray(nearDeep, direction);
+            var ray = new Ray(nearDeep, direction);
 
-                //Zoom with mouse wheel
-                if (mouseState.ScrollWheelValue != LastMouseState.ScrollWheelValue) {
-                    //Compute length (10 / nudge)
-                    var length = (mouseState.ScrollWheelValue - LastMouseState.ScrollWheelValue) / 4;
+            //Zooming
+            var zoom = 0f;
 
-                    //Apply translation
-                    this.View.Translation -= ray.Direction * length;
+            if (mouseState.ScrollWheelValue != LastMouseState.ScrollWheelValue) //Zoom with mouse wheel
+                zoom = (mouseState.ScrollWheelValue - LastMouseState.ScrollWheelValue) / 4;
+            else if (keyboardState.IsKeyDown(Keys.Add) && this.LastKeyboardState.IsKeyUp(Keys.Add))
+                zoom = 60;
+            else if (keyboardState.IsKeyDown(Keys.Subtract) && this.LastKeyboardState.IsKeyUp(Keys.Subtract))
+                zoom = -60;
 
-                    //Expand population if necessary
-                    if (this.CurrentRequest != null && !this.CurrentRequest.IsLoading && this.Questions.Count > 0 && -this.View.Translation.Z - 2000 < this.Questions.Min(q => q.Position.Z)) {
-                        ++this.CurrentRequest.Page;
-                        this.LoadAndExpand();
+            if (zoom != 0) {
+                Vector3 to;
+
+                if (this.ZoomAnimation != null) {
+                    to = (Vector3)this.ZoomAnimation.To;
+                    Animator.Animations.Remove(this.ZoomAnimation);
+                }
+                else to = this.View.Translation;
+
+                to -= ray.Direction * zoom;
+
+                this.ZoomAnimation = new Animation(this, "View.Translation", to, new TimeSpan(0, 0, 0, 0, 100));
+                this.ZoomAnimation.Finished += new EventHandler((sender, e) => this.ZoomAnimation = null);
+                Animator.Animations.Add(this.ZoomAnimation);
+
+                //Apply translation
+                //this.View.Translation -= ray.Direction * zoom;
+
+                //Expand population if necessary
+                if (this.CurrentRequest != null && !this.CurrentRequest.IsLoading && this.Questions.Count > 0 && -this.View.Translation.Z - 2000 < this.Questions.Min(q => q.Position.Z)) {
+                    ++this.CurrentRequest.Page;
+                    this.LoadAndExpand();
+                }
+            }
+
+            //Mouse down...
+            if (mouseState.LeftButton == ButtonState.Pressed && this.LastMouseState.LeftButton == ButtonState.Released && this.PanForce == Vector3.Zero)
+                foreach (var question in this.Questions.OrderByDescending(q => q.Position.Z)) {
+                    if (ray.Intersects(question.BoundingBox).HasValue) {
+                        this.ClickedQuestion = question;
+                        this.MouseDownPosition = mouseState.GetPosition();
+                        break;
                     }
                 }
 
-                //Mouse down...
-                if (mouseState.LeftButton == ButtonState.Pressed && this.LastMouseState.LeftButton == ButtonState.Released)
-                    foreach (var question in this.Questions.OrderByDescending(q => q.Position.Z)) {
-                        if (ray.Intersects(question.BoundingBox).HasValue) {
-                            this.ClickedQuestion = question;
-                            break;
-                        }
-                    }
+            //...and up (finalize)
+            if (mouseState.LeftButton == ButtonState.Released && this.ClickedQuestion != null &&
+                    (this.MouseDownPosition - mouseState.GetPosition()).Length() < 5f &&
+                    ray.Intersects(this.ClickedQuestion.BoundingBox).HasValue) {
+                this.Browser.WebBrowser.Navigate(this.ClickedQuestion.Question.TimelineUri);
+                this.Browser.Show();
+                this.Browser.BringToFront();
+                this.State = AppState.BrowserOpened;
+            }
 
-                //...and up (finalize)
-                if (mouseState.LeftButton == ButtonState.Released && this.ClickedQuestion != null &&
-                        ray.Intersects(this.ClickedQuestion.BoundingBox).HasValue) {
-                    this.Browser.WebBrowser.Navigate(this.ClickedQuestion.Question.TimelineUri);
-                    this.Browser.Show();
-                    this.Browser.BringToFront();
-                    this.State = AppState.BrowserOpened;
+            //Or drop it?
+            if (mouseState.LeftButton == ButtonState.Released)
+                this.ClickedQuestion = null;
+
+            //Pan by dragging
+            if (mouseState.LeftButton == ButtonState.Pressed) {
+                var currentMousePos = new Vector3(mouseState.X, -mouseState.Y, 0);
+
+                if (this.LastMouseState.LeftButton == ButtonState.Pressed) {
+                    var move = currentMousePos - new Vector3(this.LastMouseState.X, -this.LastMouseState.Y, 0);
+                    if (move.Length() > 0) this.PanForce = move;
+                    this.View.Translation += move;
                 }
+                else
+                    this.PanForce = Vector3.Zero;
+            }
 
-                //Or drop it?
-                if (mouseState.LeftButton == ButtonState.Released)
-                    this.ClickedQuestion = null;
+            //Pan force
+            var len = this.PanForce.Length();
 
-                //Pan by dragging
-                if (mouseState.LeftButton == ButtonState.Pressed) {
-                    var currentMousePos = new Vector3(mouseState.X, -mouseState.Y, 0);
-
-                    if (this.LastMouseState.LeftButton == ButtonState.Pressed) {
-                        var move = currentMousePos - new Vector3(this.LastMouseState.X, -this.LastMouseState.Y, 0);
-                        if (move.Length() > 0) this.PanForce = move;
-                        this.View.Translation += move;
-                    }
-                    else
-                        this.PanForce = Vector3.Zero;
-                }
-
-                //Pan force
-                var len = this.PanForce.Length();
-
-                if (this.LastMouseState.LeftButton == ButtonState.Released && len > 0) {
-                    this.View.Translation += this.PanForce;
-                    if (len > 20)
-                        this.PanForce *= 20 / len;
-                    if (len > 1)
-                        this.PanForce *= 0.9f; //TODO: Make proportional to elapsed game time
-                    else
-                        this.PanForce = Vector3.Zero;
-                }
+            if (this.LastMouseState.LeftButton == ButtonState.Released && len > 0) {
+                this.View.Translation += this.PanForce;
+                if (len > 20)
+                    this.PanForce *= 20 / len;
+                if (len > 1)
+                    this.PanForce *= 0.9f; //TODO: Make proportional to elapsed game time
+                else
+                    this.PanForce = Vector3.Zero;
             }
         }
 
         protected void Implode() {
-            var animation = new Animation(this, "View.Translation.Z",
-                this.View.Translation.Z - this.NearPlane - this.FarPlane,
-                new TimeSpan(0, 0, 1), Interpolators.CubicIn);  
-
-            Animator.Animations.Add(animation);
+            foreach (var qis in this.Questions)
+                Animator.Animations.Add(new Animation(qis, "Position", new Vector3(0, 0, this.View.Translation.Z - this.NearPlane - this.FarPlane),
+                    new TimeSpan(0, 0, 0, 0, 800), Interpolators.CubicIn));
         }
 
         protected void Explode() {
             this.ResetView();
-            this.View.Translation = new Vector3(this.View.Translation.X, this.View.Translation.Y, -this.NearPlane - this.FarPlane);
-            
-            var animation = new Animation(this, "View.Translation.Z", 0f,
-                new TimeSpan(0, 0, 1), Interpolators.CubicOut);
 
-            Animator.Animations.Add(animation);
+            foreach (var qis in this.Questions)
+                Animator.Animations.Add(new Animation(qis, "Position", new Vector3(0, 0, this.View.Translation.Z - this.NearPlane - this.FarPlane),
+                    qis.Position,
+                    new TimeSpan(0, 0, 0, 0, 800), Interpolators.CubicOut));
         }
     }
 }

@@ -181,6 +181,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.GUI.cs" />
+    <Compile Include="Sources\AuthorQuestionSource.cs" />
+    <Compile Include="Sources\IQuestionSource.cs" />
+    <Compile Include="Sources\SimpleQuestionSource.cs" />
     <Compile Include="UI\ImageBox.cs" />
     <Compile Include="UI\MouseEventHandler.cs" />
   </ItemGroup>

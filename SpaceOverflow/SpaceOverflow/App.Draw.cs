@@ -38,8 +38,11 @@ namespace SpaceOverflow
                             else return (distance - nearBegin) / (nearEnd - nearBegin); //Fade in at near plane
                         });
 
-                        lock (this.Questions)
-                            foreach (var question in this.Questions) {
+
+
+                        lock (this.Questions) {
+                            var maxZ = this.Questions.Count > 0 ? this.Questions.Max(qis => -qis.Position.Z) : 1f;
+                            foreach (var question in this.Questions.OrderByDescending(qis => qis.Position.Z)) {
                                 var opacity = mapOpacity(question.Position.Z);
 
                                 if (opacity > 0) {
@@ -51,9 +54,11 @@ namespace SpaceOverflow
                                     var scale = (projectedTopRight.X - projectedBottomLeft.X) / realTextSize.X;
                                     var color = new Color(Color.White, opacity);
 
-                                    this.SpriteBatch.DrawString(this.QuestionFont, question.Question.Title, positionTopLeft, color, 0f, new Vector2(), scale, SpriteEffects.None, 0);
+                                    this.SpriteBatch.DrawString(this.QuestionFont, question.Question.Title, positionTopLeft, color, 0f, new Vector2(), scale, SpriteEffects.None, 0f);
+                                    
                                 }
                             }
+                        }
 
                     } this.SpriteBatch.End();
                 }
