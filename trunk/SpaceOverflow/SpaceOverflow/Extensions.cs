@@ -111,6 +111,10 @@ namespace SpaceOverflow
 
             return pos * pos;
         }
+
+        public static Vector2 GetPosition(this MouseState mouseState) {
+            return new Vector2(mouseState.X, mouseState.Y);
+        }
     }
 
     public enum TextAlignment

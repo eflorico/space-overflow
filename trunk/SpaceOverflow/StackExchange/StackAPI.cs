@@ -12,7 +12,7 @@ namespace StackExchange
     public class StackAPI
     {
         public StackAPI(string host)
-            : this("api." + host, host, "0.9")
+            : this("api." + host, host, "1.0")
         { }
 
         public StackAPI(string apiHost, string host, string version)

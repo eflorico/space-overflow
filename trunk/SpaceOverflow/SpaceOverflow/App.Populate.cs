@@ -141,38 +141,7 @@ namespace SpaceOverflow
             }
         }
 
-        protected void CreateMappers(IEnumerable<Question> questions) {
-            Func<Question, float> zCriterionSelector = null;
-            float minZ, maxZ;
-            int counter = 0;
-
-            if (this.ZOrderButton.SelectedItem == this.ZCreationButton) zCriterionSelector = new Func<Question, float>(q => (float)q.CreationDate.ToUnixTimestamp());
-            else if (this.ZOrderButton.SelectedItem == this.ZFeaturedButton) zCriterionSelector = new Func<Question, float>(q =>
-                counter++);
-            else if (this.ZOrderButton.SelectedItem == this.ZVotesButton) zCriterionSelector = new Func<Question, float>(q => q.UpVoteCount - q.DownVoteCount);
-            else if (this.ZOrderButton.SelectedItem == this.ZHotButton) zCriterionSelector = new Func<Question, float>(q => counter++);
-            else if (this.ZOrderButton.SelectedItem == this.ZActiveButton) zCriterionSelector = new Func<Question, float>(q => q.LastActivityDate.Ticks);
-
-            if (this.ZOrderButton.SelectedItem == this.ZFeaturedButton || this.ZOrderButton.SelectedItem == this.ZHotButton) {
-                minZ = 0;
-                maxZ = questions.Count();
-            }
-            else {
-                minZ = questions.Min(zCriterionSelector);
-                maxZ = questions.Max(zCriterionSelector);
-            }
-            
-
-            this.ZMapper = new Func<Question, float>(q => {
-                if (maxZ - minZ == 0) return 1;
-                
-                var relativeValue = (float)(zCriterionSelector(q) - minZ);
-                var range = (float)(maxZ - minZ) ;
-                var ret = relativeValue / range;
-                return ret;
-            });
-
-
+        protected void CreateRAndThetaMappers(IEnumerable<Question> questions) {
             Func<Question, float> rCriterionSelector = null;
             float minR, maxR;
 
@@ -194,10 +163,47 @@ namespace SpaceOverflow
 
             this.ThetaMapper = new Func<Question, float>(q =>
                 q.ID * q.OwnerID % 143268);
+        }
+
+        protected void CreateZMapper(IEnumerable<Question> questions) {
+            Func<Question, float> zCriterionSelector = null;
+            float minZ, maxZ;
+            int counter = 0;
+
+            if (this.ZOrderButton.SelectedItem == this.ZCreationButton) zCriterionSelector = new Func<Question, float>(q => (float)q.CreationDate.ToUnixTimestamp());
+            else if (this.ZOrderButton.SelectedItem == this.ZFeaturedButton) zCriterionSelector = new Func<Question, float>(q =>
+                counter++);
+            else if (this.ZOrderButton.SelectedItem == this.ZVotesButton) zCriterionSelector = new Func<Question, float>(q => q.UpVoteCount - q.DownVoteCount);
+            else if (this.ZOrderButton.SelectedItem == this.ZHotButton) zCriterionSelector = new Func<Question, float>(q => counter++);
+            else if (this.ZOrderButton.SelectedItem == this.ZActiveButton) zCriterionSelector = new Func<Question, float>(q => q.LastActivityDate.Ticks);
+
+            if (this.ZOrderButton.SelectedItem == this.ZFeaturedButton || this.ZOrderButton.SelectedItem == this.ZHotButton) {
+                minZ = 0;
+                maxZ = questions.Count();
+            }
+            else {
+                minZ = questions.Min(zCriterionSelector);
+                maxZ = questions.Max(zCriterionSelector);
+            }
+
+
+            this.ZMapper = new Func<Question, float>(q => {
+                if (maxZ - minZ == 0) return 1;
+
+                var relativeValue = (float)(zCriterionSelector(q) - minZ);
+                var range = (float)(maxZ - minZ);
+                var ret = relativeValue / range;
+                return ret;
+            });
+        }
+
+        protected void CreateMappers(IEnumerable<Question> questions) {
+            this.CreateRAndThetaMappers(questions);
+            this.CreateZMapper(questions);
 
             this.QuestionMapper = new Func<Question, Vector3>(q => {
                 var z = this.ZMapper(q) * 3000 - 3000;
-                var r = (1 - this.RMapper(q)) * 500;
+                var r = (1 - this.RMapper(q)) * 1000;
                 var theta = this.ThetaMapper(q);
 
                 return new Vector3(r * (float)Math.Cos(theta), r * (float)Math.Sin(theta), z);
@@ -205,9 +211,12 @@ namespace SpaceOverflow
         }
 
         protected void ReMap() {
-            this.CreateMappers(this.Questions.Select(qis => qis.Question));
+            this.CreateRAndThetaMappers(this.Questions.Select(qis => qis.Question));
             this.Questions.ForEach(qis => {
-                Animator.Animations.Add(new Animation(qis, "Position", this.QuestionMapper(qis.Question), new TimeSpan(0, 0, 1), Interpolators.QuadraticInOut));
+
+                Animator.Animations.Add(new Animation(qis, "Position", 
+                    this.QuestionMapper(qis.Question),
+                    new TimeSpan(0, 0, 1), Interpolators.QuadraticInOut));
             });
         }
 
