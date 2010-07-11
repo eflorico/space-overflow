@@ -41,7 +41,6 @@ namespace SpaceOverflow
 
 
                         lock (this.Questions) {
-                            var maxZ = this.Questions.Count > 0 ? this.Questions.Max(qis => -qis.Position.Z) : 1f;
                             foreach (var question in this.Questions.OrderByDescending(qis => qis.Position.Z)) {
                                 var opacity = mapOpacity(question.Position.Z);
 
@@ -119,7 +118,7 @@ namespace SpaceOverflow
                 }
                 effect.End();
 
-                this.SpriteBatch.Begin(); {
+                this.SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.None); {
                     this.ToolBar.DrawTo(this.SpriteBatch);
                 } this.SpriteBatch.End();
 

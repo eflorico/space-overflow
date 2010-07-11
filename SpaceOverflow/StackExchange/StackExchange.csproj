@@ -43,24 +43,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TimelineItem.cs" />
-    <Compile Include="APIPagedDataRequest.cs" />
-    <Compile Include="APIObject.cs" />
-    <Compile Include="APIRequest.cs" />
-    <Compile Include="APIRequestBase.cs" />
-    <Compile Include="APISortedDataRequest.cs" />
-    <Compile Include="APIDataResponse.cs" />
-    <Compile Include="QuestionsRequest.cs" />
-    <Compile Include="QuestionsRequestBase.cs" />
-    <Compile Include="SearchRequest.cs" />
-    <Compile Include="StackAPI.cs" />
+    <Compile Include="Core\APIRequest.cs" />
+    <Compile Include="Core\HttpJsonRequest.cs" />
+    <Compile Include="Core\IAsyncOperationProvider.cs" />
+    <Compile Include="StackAuthSitesRequest.cs" />
+    <Compile Include="Users\Timeline\TimelineItem.cs" />
+    <Compile Include="Core\APIPagedDataRequest.cs" />
+    <Compile Include="Core\APIObject.cs" />
+    <Compile Include="Core\SimpleAPIRequest.cs" />
+    <Compile Include="Core\APISortedDataRequest.cs" />
+    <Compile Include="Core\APIDataResponse.cs" />
+    <Compile Include="Questions\QuestionsRequest.cs" />
+    <Compile Include="Questions\QuestionsRequestBase.cs" />
+    <Compile Include="Questions\SearchRequest.cs" />
+    <Compile Include="Core\StackAPI.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="Question.cs" />
+    <Compile Include="Questions\Question.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TimelineRequest.cs" />
-    <Compile Include="User.cs" />
-    <Compile Include="UsersQuestionsRequest.cs" />
-    <Compile Include="UsersRequest.cs" />
+    <Compile Include="Users\Timeline\TimelineRequest.cs" />
+    <Compile Include="Users\User.cs" />
+    <Compile Include="Users\Questions\UsersQuestionsRequest.cs" />
+    <Compile Include="Users\UsersRequest.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

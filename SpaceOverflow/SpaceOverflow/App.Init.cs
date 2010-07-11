@@ -124,11 +124,12 @@ namespace SpaceOverflow
             this.Caret = new Texture2D(this.GraphicsDevice, 1, 1, 1, TextureUsage.Tiled, SurfaceFormat.Color);
             this.Caret.FillSolid(new Color(84, 84, 84));
             this.Wheel = this.Content.Load<Texture2D>("Wheel");
+            this.CornerMask = this.Content.Load<Texture2D>("CornerMask");
+
+            //Mask effect
+            this.MaskEffect = this.Content.Load<Effect>("MaskEffect");
 
             this.InitializeGUI();
-
-            //Initial population
-            this.ReloadAndPopulate();
         }
     }
 }

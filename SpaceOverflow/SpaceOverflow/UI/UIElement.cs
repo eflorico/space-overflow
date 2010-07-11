@@ -169,6 +169,11 @@ namespace SpaceOverflow.UI
         public bool IsVisible { get; set; }
 
         /// <summary>
+        /// Corner radius that is applied to the background.
+        /// </summary>
+        public Texture2D CornerMask { get; set; }
+
+        /// <summary>
         /// List of backgrounds. Drawn in specified order.
         /// </summary>
         public List<Background> Backgrounds { get; private set; }
@@ -209,12 +214,52 @@ namespace SpaceOverflow.UI
         /// </summary>
         /// <param name="target"></param>
         protected void DrawBackgrounds(SpriteBatch target) {
+            if (this.Backgrounds.Count == 0) return;
+
+
             var fillRect = this.Bounds; //Target rectangle for background
+
+            if (false && this.CornerMask != null) {
+                target.End();
+
+                var x = this.Manager.Device.GetRenderTarget(0);
+                var tempRenderTarget = (RenderTarget2D)this.Manager.Device.GetRenderTarget(0);
+
+                var newRenderTarget = new RenderTarget2D(this.Manager.Device, this.Manager.Device.PresentationParameters.BackBufferWidth, this.Manager.Device.PresentationParameters.BackBufferHeight, 1, this.Manager.Device.DisplayMode.Format, this.Manager.Device.PresentationParameters.MultiSampleType, this.Manager.Device.PresentationParameters.MultiSampleQuality);
+                this.Manager.Device.SetRenderTarget(0, newRenderTarget);
+                this.Manager.Device.Clear(Color.TransparentBlack);
+
+                target.Begin();
+                {
+                    target.Draw(this.CornerMask, new Vector2(), Color.White);
+                    target.Draw(this.CornerMask, new Vector2(fillRect.Width - this.CornerMask.Width, 0), Color.White, SpriteEffects.FlipHorizontally);
+                    target.Draw(this.CornerMask, new Vector2(0, fillRect.Height - this.CornerMask.Height), Color.White, SpriteEffects.FlipVertically);
+                    target.Draw(this.CornerMask, new Vector2(fillRect.Width - this.CornerMask.Width, fillRect.Height - this.CornerMask.Height), Color.White, SpriteEffects.FlipVertically | SpriteEffects.FlipHorizontally);
+
+                    var white = new Texture2D(this.Manager.Device, 1, 1);
+                        white.FillSolid(Color.White);
+                        target.Draw(white, new Rectangle(this.CornerMask.Width, 0, fillRect.Width - this.CornerMask.Width * 2, fillRect.Height), Color.White);
+                        target.Draw(white, new Rectangle(0, this.CornerMask.Height, fillRect.Width, fillRect.Height - this.CornerMask.Height * 2), Color.White);
+                   
+
+                } target.End();
+
+                
+
+                this.Manager.Device.SetRenderTarget(0, tempRenderTarget);
+                var mask = newRenderTarget.GetTexture();
+                newRenderTarget.Dispose();
+
+                target.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.None);
+                this.Manager.MaskEffect.Parameters["TextureMask"].SetValue(mask);
+                this.Manager.MaskEffect.Begin();
+                this.Manager.MaskEffect.CurrentTechnique.Passes[0].Begin();
+            }
 
             foreach (var background in this.Backgrounds)
                 if (background.Position == BackgroundPosition.Fill)
                     target.Draw(background.Texture, fillRect, Color.White);
-                else { 
+                else {
                     var rect = this.Bounds;
 
                     //Determine target rectangle fot this background and make fillRect smaller so that following backgrounds don't overlap
@@ -245,6 +290,14 @@ namespace SpaceOverflow.UI
 
                     target.Draw(background.Texture, rect, null, Color.White, 0f, new Vector2(), background.Effects, 0);
                 }
+
+            if (false && this.CornerMask != null) {
+                this.Manager.MaskEffect.CurrentTechnique.Passes[0].End();
+                this.Manager.MaskEffect.End();
+                target.End();
+                target.Begin();
+            }
+
         }
 
         /// <summary>

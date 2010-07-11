@@ -16,7 +16,7 @@ namespace StackExchange
                    select new Question(this.API) {
                        ID = i["question_id"].Value<int>(),
                        Title = i["title"].Value<string>(),
-                       TimelineUri = new Uri(this.API.BaseURI, i["question_timeline_url"].Value<string>()),
+                       TimelineUri = new Uri(this.API.SiteUri, i["question_timeline_url"].Value<string>()),
                        OwnerID = i["owner"] != null ? i["owner"]["user_id"].Value<int>() : 0,
                        OwnerReputation = i["owner"] != null ? i["owner"]["reputation"].Value<int>() : 0,
                        Tags = i["tags"].Children().Select(j => j.Value<string>()).ToList(),
