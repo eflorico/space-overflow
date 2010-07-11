@@ -2,13 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace SpaceOverflow.UI
 {
     public class UIManager
     {
-        public UIManager(UIElement root) {
+        public UIManager(UIElement root, Effect maskEffect, GraphicsDevice device) {
             this.UIRoot = root;
+            this.MaskEffect = maskEffect;
+            this.Device = device;
+
             root.Manager = this;
 
             EventInput.CharEntered += new CharEnteredHandler((sender, e) => {
@@ -21,6 +25,8 @@ namespace SpaceOverflow.UI
         }
 
         public UIElement UIRoot { get; private set; }
+        public Effect MaskEffect { get; private set; }
+        public GraphicsDevice Device { get; private set; }
 
         private Focusable _focus;
         public Focusable Focus {

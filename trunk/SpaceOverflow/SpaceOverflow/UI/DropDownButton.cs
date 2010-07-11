@@ -91,14 +91,14 @@ namespace SpaceOverflow.UI
         public override void Arrange() {
             //Temporarily add selected item to drop-down to measure it under same conditions
             //(Property inheritance doesn't work when item is cut off from visual element tree)
-            this.DropDownMenu.AddChild(this.SelectedItem); 
+            if (this.SelectedItem != null) this.DropDownMenu.AddChild(this.SelectedItem); 
 
             //Find biggest item
             var itemSizes = this.Items.Select(item => item.Measure() - item.Padding);
-            var width = itemSizes.Max(sz => sz.X);
-            var height = itemSizes.Max(sz => sz.Y);
+            var width = itemSizes.Count() > 0 ? itemSizes.Max(sz => sz.X) : 0;
+            var height = itemSizes.Count() > 0 ? itemSizes.Max(sz => sz.Y) : 0;
 
-            this.DropDownMenu.RemoveChild(this.SelectedItem);
+            if (this.SelectedItem != null) this.DropDownMenu.RemoveChild(this.SelectedItem);
 
             //Set size of all items to the one of the biggest
             foreach (var item in this.Items)

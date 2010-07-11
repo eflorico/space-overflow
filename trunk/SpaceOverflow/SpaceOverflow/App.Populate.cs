@@ -47,20 +47,14 @@ namespace SpaceOverflow
             this.ProgressIndicator.IsVisible = true;
 
             try {
-                this.CurrentRequest.BeginGetResponse(response => {
-                    try {
-                        this.ExpandPopulation(response.Items);
-                        if (this.Questions.Count == 0) this.ProgressLabel.Text = "No questions found";
-                        else this.ProgressLabel.Text = "Ready";
-                        this.ProgressIndicator.IsVisible = false;
-                    }
-                    catch (Exception ex) {
-                        Debug.Print("Error while loading quetions:");
-                        Debug.Print(ex.ToString());
-
-                        this.ProgressLabel.Text = "Error";
-                        this.ProgressIndicator.IsVisible = false;
-                    }
+                this.CurrentRequest.Begin(response => {
+                    this.ExpandPopulation(response.Items);
+                    if (this.Questions.Count == 0) this.ProgressLabel.Text = "No questions found";
+                    else this.ProgressLabel.Text = "Ready";
+                    this.ProgressIndicator.IsVisible = false;
+                }, ex => {
+                    this.ProgressLabel.Text = "Error";
+                    this.ProgressIndicator.IsVisible = false;
                 });
             }
             catch (Exception ex) {
@@ -74,13 +68,7 @@ namespace SpaceOverflow
 
         protected void BeginLoadQuestions(Action<IEnumerable<Question>> callback)
         {
-            StackAPI api = null;
-
-            if (this.SourceButton.SelectedItem == this.StackOverflowButton) api = StackAPI.StackOverflow;
-            else if (this.SourceButton.SelectedItem == this.ServerFaultButton) api = StackAPI.ServerFault;
-            else if (this.SourceButton.SelectedItem == this.SuperUserButton) api = StackAPI.SuperUser;
-            else if (this.SourceButton.SelectedItem == this.MetaButton) api = StackAPI.Meta;
-            else if (this.SourceButton.SelectedItem == this.StackAppsButton) api = StackAPI.StackApps;
+            StackAPI api = this.SourceButtons[this.SourceButton.SelectedItem];
 
             if (this.CurrentRequest != null) {
                 this.CurrentRequest.Abort();
@@ -111,7 +99,7 @@ namespace SpaceOverflow
                     new UsersRequest(api) {
                         Filter = this.SearchBox.Text,
                         PageSize = 100
-                    }.BeginGetResponse(response => {
+                    }.Begin(response => {
                         var user = response.Items.OrderByDescending(item => {
                             if (item.DisplayName.ToLower() == this.SearchBox.Text.ToLower()) return 1;
                             else if (item.DisplayName.ToLower().Contains(this.SearchBox.Text.ToLower())) return 0.5;
@@ -128,8 +116,8 @@ namespace SpaceOverflow
                         }
                         else ;
 
-                        this.CurrentRequest.BeginGetResponse(response2 => callback(response2.Items));
-                    });
+                        this.CurrentRequest.Begin(response2 => callback(response2.Items), error => { });
+                    }, error => { });
                 }
             }
 
@@ -137,7 +125,7 @@ namespace SpaceOverflow
                 this.CurrentRequest.PageSize = 100;
                 this.CurrentRequest.Page = 1;
 
-                this.CurrentRequest.BeginGetResponse(response => callback(response.Items));
+                this.CurrentRequest.Begin(response => callback(response.Items), ex => { });
             }
         }
 

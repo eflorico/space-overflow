@@ -104,7 +104,7 @@ namespace SpaceOverflow
                 //this.View.Translation -= ray.Direction * zoom;
 
                 //Expand population if necessary
-                if (this.CurrentRequest != null && !this.CurrentRequest.IsLoading && this.Questions.Count > 0 && -this.View.Translation.Z - 2000 < this.Questions.Min(q => q.Position.Z)) {
+                if (this.CurrentRequest != null && !this.CurrentRequest.IsRunning && this.Questions.Count > 0 && -this.View.Translation.Z - 2000 < this.Questions.Min(q => q.Position.Z)) {
                     ++this.CurrentRequest.Page;
                     this.LoadAndExpand();
                 }

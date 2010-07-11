@@ -6,7 +6,7 @@ using SpaceOverflow.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SpaceOverflow.Effects;
-
+using StackExchange;
 namespace SpaceOverflow
 {
 	partial class App
@@ -25,12 +25,15 @@ namespace SpaceOverflow
                 DropDownButton SearchPicker;
                     Button InQuestionsButton, ByAuthorButton, ByActivityButton;
                 DropDownButton SourceButton;
-                    Button StackOverflowButton, ServerFaultButton, SuperUserButton, MetaButton, StackAppsButton;
+                    Dictionary<UIElement, StackAPI> SourceButtons = new Dictionary<UIElement, StackAPI>();
+                    //Button StackOverflowButton, ServerFaultButton, SuperUserButton, MetaButton, StackAppsButton;
                 Button ProgressLabel;
                 ImageBox ProgressIndicator;
         BrowserOverlay Browser;
 
         Background IndicatorBackground, TextBoxIndicatorBackground;
+        Effect MaskEffect;
+        Texture2D CornerMask;
         #endregion
 
         protected void InitializeGUI() {
@@ -52,7 +55,7 @@ namespace SpaceOverflow
                 }
             };
             this.ToolBar.Backgrounds.Add(new Background(this.ToolBarBackground));
-            this.UIManager = new UIManager(this.ToolBar);
+            this.UIManager = new UIManager(this.ToolBar, this.MaskEffect, this.GraphicsDevice);
 
             //Browse or search
             this.ToolBar.AddChild(this.RequestTypeButton = new SplitButton());
@@ -147,12 +150,22 @@ namespace SpaceOverflow
                 new Background(this.ButtonBackground),
                 new Background(this.ButtonIndicator, BackgroundPosition.Center)
             });
-            this.SourceButton.AddItem(this.MetaButton = new Button() { Text = "Meta" });
-            this.SourceButton.AddItem(this.StackAppsButton = new Button() { Text = "Stack Apps" });
-            this.SourceButton.AddItem(this.SuperUserButton = new Button() { Text = "Super User" });
-            this.SourceButton.AddItem(this.ServerFaultButton = new Button() { Text = "Server Fault" });
-            this.SourceButton.AddItem(this.StackOverflowButton = new Button() { Text = "Stack Overflow" });
-            this.SourceButton.SelectedItem = this.StackOverflowButton;
+
+            new StackAuthSitesRequest().Begin(sites => {
+                foreach (var site in sites.Where(site => site.State == APIState.Normal || site.State == APIState.LinkedMeta)) {
+                    var button = new Button() { 
+                        Text = site.Name,
+                        Padding = new Thickness(5, 10, 0, 10),
+                        Size = new Vector2(-1, 27)
+                    };
+                    this.SourceButtons.Add(button, site);
+                    this.SourceButton.AddItem(button);
+                }
+
+                //Initial population
+                this.ReloadAndPopulate();
+            }, error => { });
+
             this.SourceButton.SelectedItemChanged += new EventHandler<SelectedItemChangedEventArgs>((sender, e) => this.ReloadAndPopulate());
 
             //Loading
@@ -184,6 +197,7 @@ namespace SpaceOverflow
                     new Background(this.DropDownEdge, BackgroundPosition.Right, SpriteEffects.FlipHorizontally),
                     new Background(this.DropDownBackground)
                 });
+                dropDown.DropDownMenu.CornerMask = this.CornerMask;
                 dropDown.DropDownMenu.Split = this.DropDownSplit;
                 dropDown.DropDownMenu.Padding = new Thickness(1);
             }
@@ -227,14 +241,10 @@ namespace SpaceOverflow
             }
 
             //DropDownButton item paddings
-            foreach (var item in new Container[] { this.SearchPicker, this.SourceButton, this.ZOrderButton, this.ROrderButton }.SelectMany(container => container.Items)) {
+            foreach (var item in new Container[] { this.SearchPicker, this.ZOrderButton, this.ROrderButton }.SelectMany(container => container.Items)) {
                 item.Padding = new Thickness(5, 10, 0, 10);
                 item.Size = new Vector2(-1, 27);
             }
-
-            //Arrange and position
-            this.ToolBar.Arrange();
-            this.ToolBar.Position = new Vector2(0, this.Window.ClientBounds.Height - this.ToolBar.Measure().Y);
 
             //Browser overlay
             this.Browser = new BrowserOverlay();

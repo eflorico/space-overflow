@@ -6,14 +6,13 @@ using Newtonsoft.Json.Linq;
 
 namespace StackExchange
 {
-    public abstract class APIPagedDataRequest<TResponseItem> : APIRequest<DataResponse<TResponseItem>>
+    public abstract class APIPagedDataRequest<TResponseItem> : SimpleAPIRequest<APIDataResponse<TResponseItem>>
     {
         public APIPagedDataRequest(StackAPI api)
             : base(api) {
             this.Page = 1;
             this.PageSize = 30;
         }
-
        
         public int Page { get; set; }
         public int PageSize { get; set; }
@@ -29,8 +28,8 @@ namespace StackExchange
 
         protected abstract IEnumerable<TResponseItem> ProcessResponseItems(JObject response);
 
-        protected override DataResponse<TResponseItem> ProcessResponse(JObject response) {
-            return new DataResponse<TResponseItem>(this.ProcessResponseItems(response),
+        protected override APIDataResponse<TResponseItem> ProcessResponse(JObject response) {
+            return new APIDataResponse<TResponseItem>(this.ProcessResponseItems(response),
                 response["total"].Value<int>(),
                 response["page"].Value<int>(),
                 response["pagesize"].Value<int>());
