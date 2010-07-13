@@ -38,23 +38,18 @@ namespace SpaceOverflow
                             else return (distance - nearBegin) / (nearEnd - nearBegin); //Fade in at near plane
                         });
 
-
-
                         lock (this.Questions) {
-                            foreach (var question in this.Questions.OrderByDescending(qis => qis.Position.Z)) {
+                            foreach (var question in this.Questions) {
                                 var opacity = mapOpacity(question.Position.Z);
 
                                 if (opacity > 0) {
-                                    var realTextSize = question.Size;
-                                    var textSize = realTextSize / 5f;
-                                    var projectedBottomLeft = this.GraphicsDevice.Viewport.Project(question.Position, this.Projection, this.View, this.World);
-                                    var projectedTopRight = this.GraphicsDevice.Viewport.Project(question.Position + new Vector3(textSize, 0), this.Projection, this.View, this.World);
-                                    var positionTopLeft = new Vector2(projectedBottomLeft.X, projectedTopRight.Y);
-                                    var scale = (projectedTopRight.X - projectedBottomLeft.X) / realTextSize.X;
+                                    var projectedTopLeft = this.GraphicsDevice.Viewport.Project(question.TopLeft, this.Projection, this.View, this.World);
+                                    var projectedBottomRight = this.GraphicsDevice.Viewport.Project(question.BottomRight, this.Projection, this.View, this.World);
+                                    var scale = (projectedBottomRight.X - projectedTopLeft.X) / question.TextSize.X;
+                                    var topLeft = new Vector2(projectedTopLeft.X, projectedTopLeft.Y);
                                     var color = new Color(Color.White, opacity);
 
-                                    this.SpriteBatch.DrawString(this.QuestionFont, question.Question.Title, positionTopLeft, color, 0f, new Vector2(), scale, SpriteEffects.None, 0f);
-                                    
+                                    this.SpriteBatch.DrawString(this.QuestionFont, question.Question.Title, topLeft, color, 0f, new Vector2(), scale, SpriteEffects.None, 0f);                                    
                                 }
                             }
                         }

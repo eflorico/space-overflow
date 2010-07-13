@@ -22,8 +22,6 @@ namespace SpaceOverflow
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (!this.InitDone) this.InitializeGUIAsync();
-
             if (Keyboard.GetState().IsKeyDown(Keys.R) && this.LastKeyboardState.IsKeyUp(Keys.R)) this.vectorRendering = !this.vectorRendering;
 
             if (Keyboard.GetState().IsKeyDown(Keys.X) && this.LastKeyboardState.IsKeyUp(Keys.X)) {
