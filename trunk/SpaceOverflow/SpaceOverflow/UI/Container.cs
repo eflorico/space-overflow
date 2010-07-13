@@ -23,12 +23,14 @@ namespace SpaceOverflow.UI
         /// Adds a logical child.
         /// </summary>
         /// <param name="item"></param>
-        public void AddItem(UIElement item) {
+        public UIElement AddItem(UIElement item) {
             if (item == null) throw new ArgumentNullException("item");
             if (this.Items.Contains(item)) throw new ArgumentException("Item cannot be added twice!");
             
             this.Items.Add(item);
             this.OnItemAdded(item);
+
+            return item;
         }
 
         /// <summary>
