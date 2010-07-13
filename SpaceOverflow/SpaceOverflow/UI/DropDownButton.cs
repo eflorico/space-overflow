@@ -46,7 +46,7 @@ namespace SpaceOverflow.UI
         protected override void OnSelectedItemChanged(UIElement oldSelectedItem, UIElement newSelectedItem) {
             base.OnSelectedItemChanged(oldSelectedItem, newSelectedItem);
 
-            if (oldSelectedItem != null) //Move previously selected item to drop-down
+            if (oldSelectedItem != null && this.Items.Contains(oldSelectedItem)) //Move previously selected item to drop-down
                 this.DropDownMenu.InsertChild(this.Items.IndexOf(oldSelectedItem), oldSelectedItem);
             if (newSelectedItem != null) { //Drop new selected item from drop-down, set button's text to item's text
                 this.DropDownMenu.RemoveChild(newSelectedItem);
