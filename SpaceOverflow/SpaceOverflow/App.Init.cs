@@ -79,8 +79,8 @@ namespace SpaceOverflow
         }
 
         protected void ResetProjection() {
-            this.FarPlane = 2400;
-            this.FarFade = 700;
+            this.FarPlane = 3400;
+            this.FarFade = 1300;
             this.NearFade = 400;
             this.NearPlane = 100;
         }
