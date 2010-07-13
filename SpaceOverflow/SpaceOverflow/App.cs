@@ -19,6 +19,7 @@ namespace SpaceOverflow
     {
         //State
         AppState State = AppState.Ready;
+        bool InitDone = false;
 
         //Input
         KeyboardState LastKeyboardState;
