@@ -7,10 +7,10 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("SpaceOverflow")]
 [assembly: AssemblyProduct("SpaceOverflow")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyCompany("Microsoft")]
+[assembly: AssemblyDescription("Experience the Stack Trilogy in 3D space!")]
+[assembly: AssemblyCompany("Eric Wolf")]
 
-[assembly: AssemblyCopyright("Copyright © Microsoft 2010")]
+[assembly: AssemblyCopyright("Copyright © Eric Wolf 2010")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -30,4 +30,4 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("0.2.3.0")]
+[assembly: AssemblyVersion("0.2.4.0")]
