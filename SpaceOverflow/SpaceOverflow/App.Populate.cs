@@ -14,7 +14,7 @@ namespace SpaceOverflow
         List<QuestionInSpace> Questions;
         Func<Question, Vector3> QuestionMapper;
         Func<Question, float> ZMapper, RMapper, ThetaMapper;
-        QuestionsRequestBase CurrentRequest;
+        QuestionSource QuestionSource;
 
         protected void ReloadAndPopulate() {
             this.ProgressLabel.Text = "Loading...";
@@ -22,111 +22,73 @@ namespace SpaceOverflow
 
             this.Implode();
 
-            try 
-            {
-                this.BeginLoadQuestions(new Action<IEnumerable<Question>>(questions => {
-                    lock (this.Questions) this.Questions.Clear();
-                    this.Repopulate(questions);
-                    this.Explode();
-                    if (this.Questions.Count == 0) this.ProgressLabel.Text = "No questions found";
-                    else this.ProgressLabel.Text = "Ready";
-                    this.ProgressIndicator.IsVisible = false;
-                }));
-            }
-            catch (Exception ex) {
+            this.BeginLoadQuestions(new Action<IEnumerable<Question>>(questions => {
+                lock (this.Questions) this.Questions.Clear();
+                this.Repopulate(questions);
+                this.Explode();
+                if (this.Questions.Count == 0) this.ProgressLabel.Text = "No questions found";
+                else this.ProgressLabel.Text = "Ready";
+                this.ProgressIndicator.IsVisible = false;
+            }), ex => {
                 Debug.Print("Error while loading quetions:");
                 Debug.Print(ex.ToString());
 
                 this.ProgressLabel.Text = "Error";
                 this.ProgressIndicator.IsVisible = false;
-            }
+            });
+
         }
 
         protected void LoadAndExpand() {
             this.ProgressLabel.Text = "Loading...";
             this.ProgressIndicator.IsVisible = true;
 
-            try {
-                this.CurrentRequest.Begin(response => {
-                    this.ExpandPopulation(response.Items);
-                    if (this.Questions.Count == 0) this.ProgressLabel.Text = "No questions found";
-                    else this.ProgressLabel.Text = "Ready";
-                    this.ProgressIndicator.IsVisible = false;
-                }, ex => {
-                    this.ProgressLabel.Text = "Error";
-                    this.ProgressIndicator.IsVisible = false;
-                });
-            }
-            catch (Exception ex) {
-                Debug.Print("Error while loading quetions:");
-                Debug.Print(ex.ToString());
-
+            this.QuestionSource.BeginFetchMoreQuestions(count => {
+                this.ExpandPopulation(this.QuestionSource.AllQuestions.Skip(this.QuestionSource.AllQuestions.Count - count));
+                this.ProgressLabel.Text = "Ready";
+                this.ProgressIndicator.IsVisible = false;
+            }, ex => {
                 this.ProgressLabel.Text = "Error";
                 this.ProgressIndicator.IsVisible = false;
-            }
+            });
         }
 
-        protected void BeginLoadQuestions(Action<IEnumerable<Question>> callback)
-        {
-            StackAPI api = this.SourceButtons[this.SourceButton.SelectedItem];
+        protected QuestionSource BuildQuestionSource() {
+            if (this.SourceButton.SelectedItem == null) return null;
 
-            if (this.CurrentRequest != null) {
-                this.CurrentRequest.Abort();
-                this.CurrentRequest = null;
+            var api = this.SourceButtons[this.SourceButton.SelectedItem];
+            var sort = this.ZOrderButtons[this.ZOrderButton.SelectedItem];
+
+            if (this.RequestTypeButton.SelectedItem == this.BrowseButton)
+                return new BasicQuestionSource() {
+                    API = api,
+                    Sort = sort,
+                    Order = Order.Descending
+                };
+            else if (this.SearchPicker.SelectedItem == this.InQuestionsButton) {
+                if (this.SearchBox.Text == "") return null;
+                return null; //TODO: Search question source
             }
-
-            if (this.RequestTypeButton.SelectedItem == this.BrowseButton) {
-                var sort = QuestionSort.Creation;
-
-                if (this.ZOrderButton.SelectedItem == this.ZCreationButton) sort = QuestionSort.Creation;
-                else if (this.ZOrderButton.SelectedItem == this.ZFeaturedButton) sort = QuestionSort.Featured;
-                else if (this.ZOrderButton.SelectedItem == this.ZVotesButton) sort = QuestionSort.Votes;
-                else if (this.ZOrderButton.SelectedItem == this.ZHotButton) sort = QuestionSort.Hot;
-                else if (this.ZOrderButton.SelectedItem == this.ZActiveButton) sort = QuestionSort.Activity;
-
-                this.CurrentRequest = new QuestionsRequest(api) {
-                    Sort = sort
+            else if (this.SearchPicker.SelectedItem == this.ByAuthorButton) {
+                if (this.SearchBox.Text == "") return null;
+                return new AuthorQuestionSource() {
+                    AuthorName = this.SearchBox.Text,
+                    API = api,
+                    Sort = sort,
+                    Order = Order.Descending
                 };
             }
-            else {
-                if (this.SearchPicker.SelectedItem == this.InQuestionsButton) {
-                    if (this.SearchBox.Text == "") throw new Exception("Empty search!");
-                    this.CurrentRequest = new SearchRequest(api) {
-                        InTitle = this.SearchBox.Text
-                    };
-                }
-                else {
-                    new UsersRequest(api) {
-                        Filter = this.SearchBox.Text,
-                        PageSize = 100
-                    }.Begin(response => {
-                        var user = response.Items.OrderByDescending(item => {
-                            if (item.DisplayName.ToLower() == this.SearchBox.Text.ToLower()) return 1;
-                            else if (item.DisplayName.ToLower().Contains(this.SearchBox.Text.ToLower())) return 0.5;
-                            else return 0;
-                        });
+            else return null; //TODO: Activity source
+        }
 
-                        if (this.SearchPicker.SelectedItem == this.ByAuthorButton) {
-                            this.CurrentRequest = new UsersQuestionsRequest(api) {
-                                UserID = user.First().ID,
-                                Sort = QuestionSort.Creation,
-                                Page = 1,
-                                PageSize = 100
-                            };
-                        }
-                        else ;
+        protected void BeginLoadQuestions(Action<IEnumerable<Question>> success, Action<Exception> error)
+        {
+            if (this.QuestionSource != null) this.QuestionSource.Abort();
 
-                        this.CurrentRequest.Begin(response2 => callback(response2.Items), error => { });
-                    }, error => { });
-                }
-            }
+            this.QuestionSource = this.BuildQuestionSource();
 
-            if (this.CurrentRequest != null) {
-                this.CurrentRequest.PageSize = 100;
-                this.CurrentRequest.Page = 1;
-
-                this.CurrentRequest.Begin(response => callback(response.Items), ex => { });
-            }
+            if (this.QuestionSource == null) error(new Exception("Couldn't build question source"));
+            else this.QuestionSource.BeginFetchMoreQuestions(count => success(this.QuestionSource.AllQuestions), error);
         }
 
         protected void CreateRAndThetaMappers(IEnumerable<Question> questions) {
@@ -158,14 +120,24 @@ namespace SpaceOverflow
             float minZ, maxZ;
             int counter = 0;
 
-            if (this.ZOrderButton.SelectedItem == this.ZCreationButton) zCriterionSelector = new Func<Question, float>(q => (float)q.CreationDate.ToUnixTimestamp());
-            else if (this.ZOrderButton.SelectedItem == this.ZFeaturedButton) zCriterionSelector = new Func<Question, float>(q =>
-                counter++);
-            else if (this.ZOrderButton.SelectedItem == this.ZVotesButton) zCriterionSelector = new Func<Question, float>(q => q.UpVoteCount - q.DownVoteCount);
-            else if (this.ZOrderButton.SelectedItem == this.ZHotButton) zCriterionSelector = new Func<Question, float>(q => counter++);
-            else if (this.ZOrderButton.SelectedItem == this.ZActiveButton) zCriterionSelector = new Func<Question, float>(q => q.LastActivityDate.Ticks);
+            var sort = this.ZOrderButtons[this.ZOrderButton.SelectedItem];
 
-            if (this.ZOrderButton.SelectedItem == this.ZFeaturedButton || this.ZOrderButton.SelectedItem == this.ZHotButton) {
+            switch (sort) {
+                case QuestionSort.Creation:
+                    zCriterionSelector = new Func<Question, float>(q => (float)q.CreationDate.ToUnixTimestamp());
+                    break;
+                case QuestionSort.Votes:
+                    zCriterionSelector = new Func<Question, float>(q => q.UpVoteCount - q.DownVoteCount);
+                    break;
+                case QuestionSort.Activity:
+                     zCriterionSelector = new Func<Question, float>(q => q.LastActivityDate.Ticks);
+                    break;
+                default:
+                    zCriterionSelector = new Func<Question, float>(q => counter++);
+                    break;
+            }
+
+            if (sort == QuestionSort.Featured || sort == QuestionSort.Hot) {
                 minZ = 0;
                 maxZ = questions.Count();
             }
