@@ -19,7 +19,7 @@ namespace SpaceOverflow
                 StackPanel SearchOptions;
                     TextBox SearchBox;
                 DropDownButton ZOrderButton;
-                    Button ZCreationButton, ZFeaturedButton, ZVotesButton, ZHotButton, ZActiveButton;
+                    Dictionary<UIElement, QuestionSort> ZOrderButtons;
                 DropDownButton ROrderButton;
                     Button RVotesButton, ROwnerReputationButton, RActiveButton;
                 DropDownButton SearchPicker;
@@ -75,11 +75,14 @@ namespace SpaceOverflow
             this.ToolBar.AddChild(zOrderPanel);
             zOrderPanel.AddChild(new Button() { Text = "Closest:" });
             zOrderPanel.AddChild(this.ZOrderButton = new DropDownButton());
-            this.ZOrderButton.AddItem(this.ZCreationButton = new Button() { Text = "Newest" });
-            this.ZOrderButton.AddItem(this.ZFeaturedButton = new Button() { Text = "Featured" });
-            this.ZOrderButton.AddItem(this.ZVotesButton = new Button() { Text = "Most votes" });
-            this.ZOrderButton.AddItem(this.ZHotButton = new Button() { Text = "Hottest" });
-            this.ZOrderButton.AddItem(this.ZActiveButton = new Button() { Text = "Latest activity" });
+
+
+            this.ZOrderButtons.Add(this.ZOrderButton.AddItem(new Button() { Text = "Newest" }), QuestionSort.Creation);
+            this.ZOrderButtons.Add(this.ZOrderButton.AddItem(new Button() { Text = "Featured" }),QuestionSort.Featured);
+            this.ZOrderButtons.Add(this.ZOrderButton.AddItem(new Button() { Text = "Most votes" }), QuestionSort.Votes);
+            this.ZOrderButtons.Add(this.ZOrderButton.AddItem(new Button() { Text = "Hottest" }), QuestionSort.Hot);
+            this.ZOrderButtons.Add(this.ZOrderButton.AddItem(new Button() { Text = "Latest activity" }), QuestionSort.Activity);
+
             this.ZOrderButton.SelectedItemChanged += new EventHandler<SelectedItemChangedEventArgs>((sender, e) =>
                 this.ReloadAndPopulate());
 
@@ -150,22 +153,10 @@ namespace SpaceOverflow
                 new Background(this.ButtonBackground),
                 new Background(this.ButtonIndicator, BackgroundPosition.Center)
             });
+            
 
-            new StackAuthSitesRequest().Begin(sites => {
-                foreach (var site in sites.Where(site => site.State == APIState.Normal || site.State == APIState.LinkedMeta)) {
-                    var button = new Button() { 
-                        Text = site.Name,
-                        Padding = new Thickness(5, 10, 0, 10),
-                        Size = new Vector2(-1, 27)
-                    };
-                    this.SourceButtons.Add(button, site);
-                    this.SourceButton.AddItem(button);
-                }
-
-                //Initial population
-                this.ReloadAndPopulate();
-            }, error => { });
-
+            //Load cached sites
+            this.PopulateSources(Config.SiteCache);
             this.SourceButton.SelectedItemChanged += new EventHandler<SelectedItemChangedEventArgs>((sender, e) => this.ReloadAndPopulate());
 
             //Loading
@@ -248,6 +239,38 @@ namespace SpaceOverflow
 
             //Browser overlay
             this.Browser = new BrowserOverlay();
+        }
+
+        protected void InitializeGUIAsync() {
+            new System.Threading.Thread(() =>
+            new StackAuthSitesRequest().Begin(sites => {
+                sites = sites.Where(site => site.State == APIState.Normal || site.State == APIState.LinkedMeta);
+
+                Config.SiteCache.Clear();
+                Config.SiteCache.AddRange(sites);
+                Config.Save();
+
+                this.PopulateSources(sites);
+            }, error => { })).Start();
+            this.InitDone = true;
+        }
+
+        protected void PopulateSources(IEnumerable<StackAPI> sites) {
+            lock (this.SourceButton) {
+                while (this.SourceButton.Items.Count > 0) this.SourceButton.RemoveItem(this.SourceButton.Items[0]);
+                this.SourceButtons.Clear();
+
+                foreach (var site in sites) {
+                    var button = new Button() {
+                        Text = site.Name,
+                        Padding = new Thickness(5, 10, 0, 10),
+                        Size = new Vector2(-1, 27)
+                    };
+
+                    this.SourceButtons.Add(button, site);
+                    this.SourceButton.AddItem(button);
+                }
+            }
         }
 	}
 }
