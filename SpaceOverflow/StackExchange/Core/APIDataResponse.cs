@@ -11,7 +11,7 @@ namespace StackExchange
             this.Items = items;
             this.Total = total;
             this.Page = page;
-            this.PageSize = PageSize;
+            this.PageSize = pageSize;
         }
 
         public IEnumerable<TItem> Items { get; private set; }
