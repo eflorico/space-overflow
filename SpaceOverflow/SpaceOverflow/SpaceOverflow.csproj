@@ -16,6 +16,7 @@
     </ApplicationIcon>
     <Thumbnail>
     </Thumbnail>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -28,7 +29,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -181,6 +181,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.GUI.cs" />
+    <Compile Include="Config.cs" />
+    <Compile Include="Sources\ActivityQuestionSource.cs" />
+    <Compile Include="Sources\AuthorQuestionSource.cs" />
+    <Compile Include="Sources\QuestionSource.cs" />
+    <Compile Include="Sources\BasicQuestionSource.cs" />
+    <Compile Include="Sources\QuestionChange.cs" />
     <Compile Include="UI\ImageBox.cs" />
     <Compile Include="UI\MouseEventHandler.cs" />
   </ItemGroup>
