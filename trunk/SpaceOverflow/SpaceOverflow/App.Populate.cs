@@ -67,7 +67,12 @@ namespace SpaceOverflow
                 };
             else if (this.SearchPicker.SelectedItem == this.InQuestionsButton) {
                 if (this.SearchBox.Text == "") return null;
-                return null; //TODO: Search question source
+                return new SearchQuestionSource() {
+                    API = api,
+                    Sort = sort,
+                    Order = Order.Descending,
+                    InTitle = this.SearchBox.Text
+                };
             }
             else if (this.SearchPicker.SelectedItem == this.ByAuthorButton) {
                 if (this.SearchBox.Text == "") return null;
@@ -173,7 +178,6 @@ namespace SpaceOverflow
         protected void ReMap() {
             this.CreateRAndThetaMappers(this.Questions.Select(qis => qis.Question));
             this.Questions.ForEach(qis => {
-
                 Animator.Animations.Add(new Animation(qis, "Position", 
                     this.QuestionMapper(qis.Question),
                     new TimeSpan(0, 0, 1), Interpolators.QuadraticInOut));
@@ -186,12 +190,14 @@ namespace SpaceOverflow
 
             this.CreateMappers(rawQuestions);
 
-            var questionsInSpace = rawQuestions.Select(q => new QuestionInSpace() {
+            var questionsInSpace = rawQuestions.Select(q => 
+                new QuestionInSpace() {
                 Question = q,
                 Position = this.QuestionMapper(q),
-                Size = this.QuestionFont.MeasureString(q.Title),
+                TextSize = this.QuestionFont.MeasureString(q.Title),
+                Scale = 0.3f,
                 Text = this.VectorQuestionFont.Fill(q.Title) //TODO: Drop if using sprite fonts only
-            }).Union(this.Questions).ToList();
+            }).OrderBy(qis => qis.Position.Z).ToList();
 
             lock (this.Questions) this.Questions = questionsInSpace;
 
@@ -265,9 +271,10 @@ namespace SpaceOverflow
             var questionsInSpace = rawQuestions.Select(q => new QuestionInSpace() {
                 Question = q,
                 Position = this.QuestionMapper(q),
-                Size = this.QuestionFont.MeasureString(q.Title),
+                TextSize = this.QuestionFont.MeasureString(q.Title),
+                Scale = 0.3f,
                 Text = this.VectorQuestionFont.Fill(q.Title) //TODO: Drop if using sprite fonts only
-            }).Union(this.Questions).ToList();
+            }).Union(this.Questions).OrderBy(qis => qis.Position.Z).ToList();
 
             lock (this.Questions) this.Questions.AddRange(questionsInSpace);
         }

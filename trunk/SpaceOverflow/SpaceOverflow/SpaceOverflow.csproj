@@ -187,6 +187,7 @@
     <Compile Include="Sources\QuestionSource.cs" />
     <Compile Include="Sources\BasicQuestionSource.cs" />
     <Compile Include="Sources\QuestionChange.cs" />
+    <Compile Include="Sources\SearchQuestionSource.cs" />
     <Compile Include="UI\ImageBox.cs" />
     <Compile Include="UI\MouseEventHandler.cs" />
   </ItemGroup>

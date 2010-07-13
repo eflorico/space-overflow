@@ -88,7 +88,6 @@ namespace SpaceOverflow
         protected void UpdateProjection() {
             this.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, (float)this.Window.ClientBounds.Width / (float)this.Window.ClientBounds.Height, 
                 this.NearPlane, 10000);
-            
         }
 
         /// <summary>
@@ -130,6 +129,7 @@ namespace SpaceOverflow
             this.MaskEffect = this.Content.Load<Effect>("MaskEffect");
 
             this.InitializeGUI();
+            this.ReloadAndPopulate();
         }
     }
 }

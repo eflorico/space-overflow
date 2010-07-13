@@ -19,7 +19,7 @@ namespace SpaceOverflow
                 StackPanel SearchOptions;
                     TextBox SearchBox;
                 DropDownButton ZOrderButton;
-                    Dictionary<UIElement, QuestionSort> ZOrderButtons;
+                    Dictionary<UIElement, QuestionSort> ZOrderButtons = new Dictionary<UIElement, QuestionSort>();
                 DropDownButton ROrderButton;
                     Button RVotesButton, ROwnerReputationButton, RActiveButton;
                 DropDownButton SearchPicker;
@@ -156,7 +156,19 @@ namespace SpaceOverflow
             
 
             //Load cached sites
-            this.PopulateSources(Config.SiteCache);
+            if (Config.SiteCache.Count > 0)
+                this.PopulateSources(Config.SiteCache);
+            else
+                new StackAuthSitesRequest().Begin(sites => {
+                    sites = sites.Where(site => site.State == APIState.Normal || site.State == APIState.LinkedMeta);
+
+                    Config.SiteCache.Clear();
+                    Config.SiteCache.AddRange(sites);
+                    Config.Save();
+
+                    this.PopulateSources(sites);
+                }, error => { });
+
             this.SourceButton.SelectedItemChanged += new EventHandler<SelectedItemChangedEventArgs>((sender, e) => this.ReloadAndPopulate());
 
             //Loading
@@ -239,20 +251,6 @@ namespace SpaceOverflow
 
             //Browser overlay
             this.Browser = new BrowserOverlay();
-        }
-
-        protected void InitializeGUIAsync() {
-            new System.Threading.Thread(() =>
-            new StackAuthSitesRequest().Begin(sites => {
-                sites = sites.Where(site => site.State == APIState.Normal || site.State == APIState.LinkedMeta);
-
-                Config.SiteCache.Clear();
-                Config.SiteCache.AddRange(sites);
-                Config.Save();
-
-                this.PopulateSources(sites);
-            }, error => { })).Start();
-            this.InitDone = true;
         }
 
         protected void PopulateSources(IEnumerable<StackAPI> sites) {
