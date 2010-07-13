@@ -23,6 +23,9 @@ namespace StackExchange
         protected HttpWebRequest BuildRequest() {
             var request = (HttpWebRequest)WebRequest.Create(this.Uri);
             request.CachePolicy = new HttpRequestCachePolicy(HttpRequestCacheLevel.NoCacheNoStore);
+            request.Accept = "application/json";
+            request.Headers["Accept-Encoding"] = "gzip,deflate";
+            request.Headers["Accept-Charset"] = "utf-8";
             request.Timeout = 10000;
             return request;
         }
