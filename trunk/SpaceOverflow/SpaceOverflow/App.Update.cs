@@ -14,7 +14,6 @@ namespace SpaceOverflow
     {
         bool vectorRendering = false;
         Vector2 MouseDownPosition;
-        Animation ZoomAnimation;
 
         /// <summary>
         /// Allows the game to run logic such as updating the world,
@@ -23,7 +22,26 @@ namespace SpaceOverflow
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            if (!this.InitDone) this.InitializeGUIAsync();
+
             if (Keyboard.GetState().IsKeyDown(Keys.R) && this.LastKeyboardState.IsKeyUp(Keys.R)) this.vectorRendering = !this.vectorRendering;
+
+            if (Keyboard.GetState().IsKeyDown(Keys.X) && this.LastKeyboardState.IsKeyUp(Keys.X)) {
+                foreach (var qis1 in this.Questions) {
+                    foreach (var qis2 in this.Questions) {
+                        var delta = qis1.Position - qis2.Position;
+                        if (delta.Length() == 0) {
+                            qis1.Position = new Vector3(qis1.Position.X, qis1.Position.Y - 10, qis1.Position.Z);
+                            qis2.Position = new Vector3(qis2.Position.X, qis2.Position.Y + 10, qis2.Position.Z);
+                        }
+                        else if (delta.Length() < 50) {
+                            delta.Normalize();
+                            qis1.Position += delta * 25;
+                            qis2.Position -= delta * 25;
+                        }
+                    }
+                }
+            }
 
             if (this.State != AppState.BrowserOpened) {
                 if (!this.UpdateGUI()) this.UpdateSpace(gameTime);
@@ -88,30 +106,21 @@ namespace SpaceOverflow
             if (zoom != 0) {
                 Vector3 to;
 
-                if (this.ZoomAnimation != null) {
-                    to = (Vector3)this.ZoomAnimation.To;
-                    Animator.Animations.Remove(this.ZoomAnimation);
-                }
-                else to = this.View.Translation;
-
-                to -= ray.Direction * zoom;
-
-                this.ZoomAnimation = new Animation(this, "View.Translation", to, new TimeSpan(0, 0, 0, 0, 100));
-                this.ZoomAnimation.Finished += new EventHandler((sender, e) => this.ZoomAnimation = null);
-                Animator.Animations.Add(this.ZoomAnimation);
+                this.View.Translation -= ray.Direction * zoom;
 
                 //Apply translation
                 //this.View.Translation -= ray.Direction * zoom;
 
                 //Expand population if necessary
-                if (this.CurrentRequest != null && !this.CurrentRequest.IsRunning && this.Questions.Count > 0 && -this.View.Translation.Z - 2000 < this.Questions.Min(q => q.Position.Z)) {
-                    ++this.CurrentRequest.Page;
+                if (this.QuestionSource != null && !this.QuestionSource.IsRunning && this.QuestionSource.CanFetchMoreQuestions && 
+                    this.Questions.Count > 0 && -this.View.Translation.Z - 2000 < this.Questions.Min(q => q.Position.Z)) {
                     this.LoadAndExpand();
                 }
             }
 
             //Mouse down...
-            if (mouseState.LeftButton == ButtonState.Pressed && this.LastMouseState.LeftButton == ButtonState.Released && this.PanForce == Vector3.Zero)
+            if (mouseState.LeftButton == ButtonState.Pressed && this.LastMouseState.LeftButton == ButtonState.Released && 
+                this.PanForce == Vector3.Zero && this.Window.ClientBounds.Contains(new Microsoft.Xna.Framework.Point(mouseState.X, mouseState.Y)))
                 foreach (var question in this.Questions.OrderByDescending(q => q.Position.Z)) {
                     if (ray.Intersects(question.BoundingBox).HasValue) {
                         this.ClickedQuestion = question;
@@ -163,7 +172,7 @@ namespace SpaceOverflow
 
         protected void Implode() {
             foreach (var qis in this.Questions)
-                Animator.Animations.Add(new Animation(qis, "Position", new Vector3(0, 0, this.View.Translation.Z - this.NearPlane - this.FarPlane),
+                Animator.Animations.Add(new Animation(qis, "Position", new Vector3(-this.View.Translation.X, -this.View.Translation.Y, -this.View.Translation.Z - this.NearPlane - this.FarPlane),
                     new TimeSpan(0, 0, 0, 0, 800), Interpolators.CubicIn));
         }
 
