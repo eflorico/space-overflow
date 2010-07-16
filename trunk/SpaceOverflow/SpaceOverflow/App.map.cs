@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using StackExchange;
+using SpaceOverflow.Effects;
+using Microsoft.Xna.Framework;
 
 namespace SpaceOverflow
 {
