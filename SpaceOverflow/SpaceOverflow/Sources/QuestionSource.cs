@@ -13,8 +13,6 @@ namespace SpaceOverflow
         }
 
         public StackAPI API { get; set; }
-        public QuestionSort Sort { get; set; }
-        public Order Order { get; set; }
 
         public List<Question> AllQuestions { get; private set; }
         public abstract bool CanFetchMoreQuestions { get; }
@@ -30,7 +28,8 @@ namespace SpaceOverflow
 
         public bool IsRunning {
             get {
-                return this.PendingRequests.FirstOrDefault(req => req.IsRunning) != null;
+                this.PendingRequests.RemoveAll(req => !req.IsRunning);
+                return this.PendingRequests.Count > 0;
             }
         }
 
@@ -87,7 +86,7 @@ namespace SpaceOverflow
                 }
 
                 this.BeginFetchQuestions(offset, count, questions => {
-                    foreach (var question in questions.Where(q => !this.AllQuestions.Contains(q, new QuestionComparer())))
+                    foreach (var question in questions.Where(q => !this.AllQuestions.Contains(q, QuestionIDComparer.Instance)))
                         success(new QuestionChange(QuestionChangeType.Added, question, null));
                         
                 }, error);

@@ -20,8 +20,11 @@ namespace SpaceOverflow
             if (this.QuestionSource == null || this.Questions.Count == 0) return;
 
             //Find range of questions to keep track of
-            var closest = this.Questions.First(qis => -this.View.Translation.Z - qis.Position.Z >= this.NearPlane);
-            var farest = this.Questions.Last(qis => -this.View.Translation.Z - qis.Position.Z <= this.FarPlane);
+            var closest = this.Questions.FirstOrDefault(qis => -this.View.Translation.Z - qis.Position.Z >= this.NearPlane);
+            var farest = this.Questions.LastOrDefault(qis => -this.View.Translation.Z - qis.Position.Z <= this.FarPlane);
+
+            if (closest == null || farest == null) return;
+
             var offset = this.Questions.IndexOf(closest);
             var count = this.Questions.IndexOf(farest) - offset;
 

@@ -61,21 +61,20 @@ namespace StackExchange
                             var httpResponse = (HttpWebResponse)this.PendingRequest.EndGetResponse(result);
                             Debug.Print("-- Got response for " + this.Uri);
                             var response = this.ReceiveResponse(httpResponse);
+                            this.PendingRequest = null;
                             success(response);
                             Debug.Print("-- Response from " + this.Uri + " received");
                         }
                         catch (Exception ex) {
-                            error(ex);
-                        }
-                        finally {
                             this.PendingRequest = null;
+                            error(ex);
                         }
                     }), null)
                 ).Start();
             }
             catch (Exception ex) {
-                error(ex);
                 this.PendingRequest = null;
+                error(ex);
             }
         }
 

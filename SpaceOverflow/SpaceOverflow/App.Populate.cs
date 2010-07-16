@@ -14,7 +14,7 @@ namespace SpaceOverflow
         List<QuestionInSpace> Questions;
         Func<Question, Vector3> QuestionMapper;
         Func<Question, float> ZMapper, RMapper, ThetaMapper;
-        QuestionSource QuestionSource;
+       
 
         protected void ReloadAndPopulate() {
             this.ProgressLabel.Text = "Loading...";
@@ -55,52 +55,7 @@ namespace SpaceOverflow
             });
         }
 
-        protected QuestionSource BuildQuestionSource() {
-            if (this.SourceButton.SelectedItem == null) return null;
-
-            var api = this.SourceButtons[this.SourceButton.SelectedItem];
-            var sort = this.ZOrderButtons[this.ZOrderButton.SelectedItem];
-
-            if (this.RequestTypeButton.SelectedItem == this.BrowseButton)
-                return new BasicQuestionSource() {
-                    API = api,
-                    Sort = sort,
-                    Order = Order.Descending
-                };
-            else if (this.SearchPicker.SelectedItem == this.InQuestionsButton) {
-                if (this.SearchBox.Text == "") return null;
-                return new SearchQuestionSource() {
-                    API = api,
-                    Sort = sort,
-                    Order = Order.Descending,
-                    InTitle = this.SearchBox.Text
-                };
-            }
-            else if (this.SearchPicker.SelectedItem == this.ByAuthorButton) {
-                if (this.SearchBox.Text == "") return null;
-                return new AuthorQuestionSource() {
-                    AuthorName = this.SearchBox.Text,
-                    API = api,
-                    Sort = sort,
-                    Order = Order.Descending
-                };
-            }
-            else return null; //TODO: Activity source
-        }
-
-        protected void BeginLoadQuestions(Action<IEnumerable<Question>> success, Action<Exception> error)
-        {
-            if (this.QuestionSource != null) this.QuestionSource.Abort();
-
-            this.QuestionSource = this.BuildQuestionSource();
-
-            if (this.QuestionSource == null) error(new Exception("Couldn't build question source"));
-            else this.QuestionSource.BeginFetchMoreQuestions(count => success(this.QuestionSource.AllQuestions), error);
-        }
-
-
-
-        protected void Repopulate(IEnumerable<Question> rawQuestions)
+        void Repopulate(IEnumerable<Question> rawQuestions)
         {
             if (rawQuestions.Count() == 0) return;
 

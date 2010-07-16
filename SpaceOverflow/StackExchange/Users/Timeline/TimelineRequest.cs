@@ -20,10 +20,10 @@ namespace StackExchange
         protected override IEnumerable<TimelineItem> ProcessResponseItems(Newtonsoft.Json.Linq.JObject response) {
             return from i in response["user_timelines"].Children()
                    select new TimelineItem(this.API) {
-                        TimelineType = (TimelineType)Enum.Parse(typeof(TimelineType), i["timeline_type"].Value<string>()),
-                        PostID = i["post_id"].Value<int>(),
-                        PostType = (PostType)Enum.Parse(typeof(PostType), i["post_type"].Value<string>()),
-                        CreationDate = i["creation_date"].Value<int>().ToDateTime(),
+                        TimelineType = i["timeline_type"].Value<string>().ParseToEnum<TimelineType>(),
+                        PostID = i.HasProperty("post_id") ? i["post_id"].Value<int?>() : null,
+                        PostType = i.HasProperty("post_type") ? i["post_type"].Value<string>().ParseToEnum<PostType>() : (PostType?)null,
+                        CreationDate = i.HasProperty("creation_date") ? i["creation_date"].Value<int>().ToDateTime() : (DateTime?)null,
                         Description = i["description"].Value<string>()
                    };
         }

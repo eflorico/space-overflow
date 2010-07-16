@@ -41,7 +41,17 @@ namespace SpaceOverflow.Effects
         public TimeSpan Duration { get; set; }
         public Interpolator Interpolator { get; set; }
         public object TargetObject { get; set; }
-        public string TargetPropertyName { get; set; }
+
+        private string _targetPropertyName;
+        public string TargetPropertyName {
+            get {
+                return this._targetPropertyName;
+            }
+            set {
+                this.TargetProperty = new PropertyOrFieldInstanceDescriptor(this.TargetObject, value);
+                this._targetPropertyName = value;
+            }
+        }
         public int Repetitions { get; set; }
 
         public AnimationState State { get; protected set; }
