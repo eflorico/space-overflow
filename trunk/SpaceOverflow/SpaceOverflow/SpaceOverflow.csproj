@@ -183,6 +183,7 @@
     <Compile Include="App.GUI.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Curve3D.cs" />
+    <Compile Include="Effects\Extensions.cs" />
     <Compile Include="Sources\ActivityQuestionSource.cs" />
     <Compile Include="Sources\AuthorQuestionSource.cs" />
     <Compile Include="Sources\QuestionComparer.cs" />

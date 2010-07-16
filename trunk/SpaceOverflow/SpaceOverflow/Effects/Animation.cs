@@ -8,24 +8,32 @@ namespace SpaceOverflow.Effects
     /// </summary>
     public class Animation
     {
-        public Animation(object targetObject, string targetPropertyName, object to) 
-            : this(targetObject, targetPropertyName, to, new TimeSpan(0, 0, 0, 1)) { }
+        //public Animation(object targetObject, string targetPropertyName, object to) 
+        //    : this(targetObject, targetPropertyName, to, new TimeSpan(0, 0, 0, 1)) { }
 
-        public Animation(object targetObject, string targetPropertyName, object to, TimeSpan duration) 
-            : this(targetObject, targetPropertyName, to, duration, Interpolators.Linear) { }
+        //public Animation(object targetObject, string targetPropertyName, object to, TimeSpan duration) 
+        //    : this(targetObject, targetPropertyName, to, duration, Interpolators.Linear) { }
 
-        public Animation(object targetObject, string targetPropertyName, object to, TimeSpan duration, Interpolator interpolator)
-            : this(targetObject, targetPropertyName, null, to, duration, interpolator) { }
+        //public Animation(object targetObject, string targetPropertyName, object to, TimeSpan duration, Interpolator interpolator)
+        //    : this(targetObject, targetPropertyName, null, to, duration, interpolator) { }
 
-        public Animation(object targetObject, string targetPropertyName, object from, object to, TimeSpan duration, Interpolator interpolator) {
-            this.TargetObject = targetObject;
-            this.TargetPropertyName = targetPropertyName;
-            this.TargetProperty = new PropertyOrFieldInstanceDescriptor(targetObject, targetPropertyName);
-            this.From = from;
-            this.To = to;
-            this.Duration = duration;
-            this.Interpolator = interpolator;
+        //public Animation(object targetObject, string targetPropertyName, object from, object to, TimeSpan duration, Interpolator interpolator) {
+        //    this.TargetObject = targetObject;
+        //    this.TargetPropertyName = targetPropertyName;
+        //    this.TargetProperty = new PropertyOrFieldInstanceDescriptor(targetObject, targetPropertyName);
+        //    this.From = from;
+        //    this.To = to;
+        //    this.Duration = duration;
+        //    this.Interpolator = interpolator;
+        //    this.Repetitions = 1;
+        //}
+
+        public Animation() {
             this.Repetitions = 1;
+        }
+
+        public Animation(Action finished) : this() {
+            this.Finished += new EventHandler((sender, e) => finished());
         }
 
         public object From { get; set; }

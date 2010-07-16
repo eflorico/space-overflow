@@ -187,17 +187,16 @@ namespace SpaceOverflow
 
         protected void Implode() {
             foreach (var qis in this.Questions)
-                Animator.Animations.Add(new Animation(qis, "Position", new Vector3(-this.View.Translation.X, -this.View.Translation.Y, -this.View.Translation.Z - this.NearPlane - this.FarPlane),
-                    new TimeSpan(0, 0, 0, 0, 800), Interpolators.CubicIn));
+                qis.Animate("Position", new Vector3(-this.View.Translation.X, -this.View.Translation.Y, -this.View.Translation.Z - this.NearPlane - this.FarPlane), 
+                    new TimeSpan(0, 0, 0, 0, 800), Interpolators.CubicIn);
         }
 
         protected void Explode() {
             this.ResetView();
 
             foreach (var qis in this.Questions)
-                Animator.Animations.Add(new Animation(qis, "Position", new Vector3(0, 0, this.View.Translation.Z - this.NearPlane - this.FarPlane),
-                    qis.Position,
-                    new TimeSpan(0, 0, 0, 0, 800), Interpolators.CubicOut));
+                qis.Animate("Position", new Vector3(0, 0, this.View.Translation.Z - this.NearPlane - this.FarPlane), qis.Position, 
+                    new TimeSpan(0, 0, 0, 0, 800), Interpolators.CubicOut);
         }
 
         protected void CallInTieFighter(QuestionInSpace target) {
@@ -208,7 +207,7 @@ namespace SpaceOverflow
             curve.AddPoint(target.Position, 1);
             curve.SetTangents();
 
-            Animator.Animations.Add(new Animation(fighter, "Position", target.Position, new TimeSpan(0, 0, 2), curve.GetInterpolator()));
+            fighter.Animate("Position", target.Position, new TimeSpan(0, 0, 2), curve.GetInterpolator());
 
             this.TieFighters.Add(fighter);
         }
