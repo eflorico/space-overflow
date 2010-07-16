@@ -55,21 +55,23 @@ namespace StackExchange
 
             try {
                 this.PendingRequest = this.BuildRequest();
-                this.PendingRequest.BeginGetResponse(new AsyncCallback(result => {
-                    try {
-                        var httpResponse = (HttpWebResponse)this.PendingRequest.EndGetResponse(result);
-                        Debug.Print("-- Got response for " + this.Uri);
-                        var response = this.ReceiveResponse(httpResponse);
-                        success(response);
-                        Debug.Print("-- Response from " + this.Uri + " received");
-                    }
-                    catch (Exception ex) {
-                        error(ex);
-                    }
-                    finally {
-                        this.PendingRequest = null;
-                    }
-                }), null);
+                new System.Threading.Thread(() =>
+                    this.PendingRequest.BeginGetResponse(new AsyncCallback(result => {
+                        try {
+                            var httpResponse = (HttpWebResponse)this.PendingRequest.EndGetResponse(result);
+                            Debug.Print("-- Got response for " + this.Uri);
+                            var response = this.ReceiveResponse(httpResponse);
+                            success(response);
+                            Debug.Print("-- Response from " + this.Uri + " received");
+                        }
+                        catch (Exception ex) {
+                            error(ex);
+                        }
+                        finally {
+                            this.PendingRequest = null;
+                        }
+                    }), null)
+                ).Start();
             }
             catch (Exception ex) {
                 error(ex);

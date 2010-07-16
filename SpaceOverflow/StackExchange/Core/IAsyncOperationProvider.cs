@@ -5,10 +5,8 @@ using System.Text;
 
 namespace StackExchange
 {
-    public interface IAsyncOperationProvider<TReturn>
+    public interface IAsyncOperationProvider<TReturn> : IAsyncStateProvider
     {
         void Begin(Action<TReturn> success, Action<Exception> error);
-        bool IsRunning { get; }
-        void Abort();
     }
 }
