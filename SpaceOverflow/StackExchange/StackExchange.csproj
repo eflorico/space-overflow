@@ -46,6 +46,7 @@
     <Compile Include="Core\APIRequest.cs" />
     <Compile Include="Core\HttpJsonRequest.cs" />
     <Compile Include="Core\IAsyncOperationProvider.cs" />
+    <Compile Include="Core\IAsyncStateProvider.cs" />
     <Compile Include="StackAuthSitesRequest.cs" />
     <Compile Include="Users\Timeline\TimelineItem.cs" />
     <Compile Include="Core\APIPagedDataRequest.cs" />
