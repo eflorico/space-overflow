@@ -51,9 +51,7 @@ namespace SpaceOverflow
         Model TieFighter;
         List<TieFighter> TieFighters = new List<TieFighter>();
         SoundEffect Plop;
-        Queue<QuestionChange> PendingChanges = new Queue<QuestionChange>();
-        DateTime LastPoll, LastChange;
-        TimeSpan ChangeInterval;
+        
         
 
         /// <summary>
