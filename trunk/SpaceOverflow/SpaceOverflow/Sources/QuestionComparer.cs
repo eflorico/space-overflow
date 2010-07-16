@@ -6,8 +6,20 @@ using StackExchange;
 
 namespace SpaceOverflow
 {
-    public class QuestionComparer : IEqualityComparer<Question>
+    public class QuestionIDComparer : IEqualityComparer<Question>
     {
+        private QuestionIDComparer() { }
+
+        private static QuestionIDComparer _instance;
+
+        public static QuestionIDComparer Instance {
+            get {
+                if (_instance == null) _instance = new QuestionIDComparer();
+                return _instance;
+            }
+        }
+
+
         #region IEqualityComparer<Question> Member
 
         public bool Equals(Question x, Question y) {
@@ -15,7 +27,7 @@ namespace SpaceOverflow
         }
 
         public int GetHashCode(Question obj) {
-            throw new NotImplementedException();
+            return obj.ID;
         }
 
         #endregion

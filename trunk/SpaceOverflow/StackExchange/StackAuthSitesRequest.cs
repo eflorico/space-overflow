@@ -20,15 +20,8 @@ namespace StackExchange
                             i["name"].Value<string>(),
                             new Uri(i["api_endpoint"].Value<string>()),
                             new Uri(i["site_url"].Value<string>()),
-                            new Func<APIState>(() => {
-                                switch (i["state"].Value<string>()) {
-                                    case "open_beta": return APIState.OpenBeta;
-                                    case "closed_beta": return APIState.ClosedBeta;
-                                    case "linked_meta": return APIState.LinkedMeta;
-                                    default: return APIState.Normal;
-                                }
-                            })()
-                            ));
+                            i["state"].Value<string>().ParseToEnum<APIState>()
+                        ));
             }, error);
         }
 

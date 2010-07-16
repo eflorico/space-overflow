@@ -26,7 +26,6 @@ namespace SpaceOverflow
                     Button InQuestionsButton, ByAuthorButton, ByActivityButton;
                 DropDownButton SourceButton;
                     Dictionary<UIElement, StackAPI> SourceButtons = new Dictionary<UIElement, StackAPI>();
-                    //Button StackOverflowButton, ServerFaultButton, SuperUserButton, MetaButton, StackAppsButton;
                 Button ProgressLabel;
                 ImageBox ProgressIndicator;
         BrowserOverlay Browser;
@@ -140,7 +139,7 @@ namespace SpaceOverflow
                 if (this.SearchBox.Text != "") this.ReloadAndPopulate();
             });
 
-            //this.SearchPicker.AddItem(this.ByActivityButton = new Button() { Text = "User's activity" });
+            this.SearchPicker.AddItem(this.ByActivityButton = new Button() { Text = "User's activity" });
             this.SearchPicker.AddItem(this.ByAuthorButton = new Button() { Text = "By author" });
             this.SearchPicker.AddItem(this.InQuestionsButton = new Button() { Text = "In questions" });
             this.SearchPicker.SelectedItem = this.InQuestionsButton;

@@ -12,11 +12,11 @@ namespace StackExchange
 
         public TimelineType TimelineType { get; set; }
 
-        public int PostID { get; set; }
-        public PostType PostType { get; set; }
+        public int? PostID { get; set; }
+        public PostType? PostType { get; set; }
 
         public string Description { get; set; }
-        public DateTime CreationDate { get; set; }
+        public DateTime? CreationDate { get; set; }
     }
 
     public enum TimelineType

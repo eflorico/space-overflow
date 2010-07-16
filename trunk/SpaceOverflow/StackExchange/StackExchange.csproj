@@ -43,6 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Answers\Answer.cs" />
+    <Compile Include="Answers\AnswersRequest.cs" />
     <Compile Include="Core\APIRequest.cs" />
     <Compile Include="Core\HttpJsonRequest.cs" />
     <Compile Include="Core\IAsyncOperationProvider.cs" />
