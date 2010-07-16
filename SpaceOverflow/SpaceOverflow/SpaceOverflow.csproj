@@ -182,12 +182,15 @@
   <ItemGroup>
     <Compile Include="App.GUI.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="Curve3D.cs" />
     <Compile Include="Sources\ActivityQuestionSource.cs" />
     <Compile Include="Sources\AuthorQuestionSource.cs" />
+    <Compile Include="Sources\QuestionComparer.cs" />
     <Compile Include="Sources\QuestionSource.cs" />
     <Compile Include="Sources\BasicQuestionSource.cs" />
     <Compile Include="Sources\QuestionChange.cs" />
     <Compile Include="Sources\SearchQuestionSource.cs" />
+    <Compile Include="TieFighter.cs" />
     <Compile Include="UI\ImageBox.cs" />
     <Compile Include="UI\MouseEventHandler.cs" />
   </ItemGroup>

@@ -11,23 +11,12 @@ namespace SpaceOverflow
         public string AuthorName { get; set; }
         protected int? AuthorID;
 
-        protected UsersRequest UsersRequest;
-        protected QuestionsRequestBase QuestionsRequest;
-
-        public override void BeginFetchMoreQuestions(Action<int> success, Action<Exception> error) {
-            throw new NotImplementedException();
-        }
-
-        public override void BeginReloadQuestions(int offset, int count, Action<IEnumerable<QuestionChange>> success, Action<Exception> error) {
-            throw new NotImplementedException();
-        }
-
-        public override void Abort() {
-            throw new NotImplementedException();
-        }
-
-        public override bool IsRunning {
+        public override bool CanFetchMoreQuestions {
             get { throw new NotImplementedException(); }
+        }
+
+        protected override void BeginFetchQuestions(int offset, int? count, Action<IEnumerable<Question>> success, Action<Exception> error) {
+            throw new NotImplementedException();
         }
     }
 }

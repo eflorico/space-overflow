@@ -56,6 +56,14 @@ namespace SpaceOverflow.Effects
                 return this.Steps.Last().GetValue(this.Owners.Last());
             }
             set {
+                foreach (var copyPoint in this.CopyPoints) {
+                    var step = this.Steps[copyPoint - 1];
+                    var owner = this.Owners[copyPoint - 1];
+                    var val = step.GetValue(owner);
+
+                    this.Owners[copyPoint] = val;
+                }
+
                 this.Steps.Last().SetValue(this.Owners.Last(), value);
 
                 foreach (var copyPoint in this.CopyPoints.OrderByDescending(x => x)) {

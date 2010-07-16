@@ -7,6 +7,7 @@ using StackExchange;
 using System.Threading;
 using SpaceOverflow.UI;
 using SpaceOverflow.Effects;
+using Microsoft.Xna.Framework.Audio;
 
 namespace SpaceOverflow
 {
@@ -70,6 +71,7 @@ namespace SpaceOverflow
             StackAPI.Key = "yLHF9Tb_NEGJY_el8Gu1Bw";
 
             EventInput.Initialize(this.Window);
+            
 
             base.Initialize();
         }
@@ -125,7 +127,13 @@ namespace SpaceOverflow
             this.Wheel = this.Content.Load<Texture2D>("Wheel");
             this.CornerMask = this.Content.Load<Texture2D>("CornerMask");
 
-            //Mask effect
+            //Models
+            this.TieFighter = this.Content.Load<Model>("TieFighter");
+
+            //Sounds
+            this.Plop = this.Content.Load<SoundEffect>("Plop");
+
+            //Effects
             this.MaskEffect = this.Content.Load<Effect>("MaskEffect");
 
             this.InitializeGUI();
