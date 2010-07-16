@@ -185,10 +185,7 @@ namespace SpaceOverflow
                 Padding = new Thickness(14, 0, 0, 0),
                 IsVisible = false
             });
-            Animator.Animations.Add(new Animation(this.ProgressIndicator, "Rotation", 0f, (float)Math.PI, new TimeSpan(0, 0, 1), Interpolators.Linear) {
-                Repetitions = -1
-            });
-
+            this.ProgressIndicator.Animate("Rotation", 0f, (float)Math.PI, new TimeSpan(0, 0, 1)).Repetitions = -1;
 
             //Generic DropDownButton styling
             foreach (var dropDown in new DropDownButton[] { this.ZOrderButton, this.ROrderButton, this.SourceButton }) {

@@ -179,9 +179,7 @@ namespace SpaceOverflow
         protected void ReMap() {
             this.CreateRAndThetaMappers(this.Questions.Select(qis => qis.Question));
             this.Questions.ForEach(qis => {
-                Animator.Animations.Add(new Animation(qis, "Position", 
-                    this.QuestionMapper(qis.Question),
-                    new TimeSpan(0, 0, 1), Interpolators.QuadraticInOut));
+                qis.Animate("Position", this.QuestionMapper(qis.Question), new TimeSpan(0, 0, 1), Interpolators.QuadraticInOut);
             });
         }
 
@@ -317,16 +315,17 @@ namespace SpaceOverflow
             else if (change.Type == QuestionChangeType.Changed) {
                 var qis = this.Questions.Find(i => i.Question == change.OldQuestion);
                 qis.Question = change.Question;
-                Animator.Animations.Add(new Animation(qis, "Position", this.QuestionMapper(qis.Question), new TimeSpan(0, 0, 1), Interpolators.QuadraticInOut));
+                qis.Animate("Position", this.QuestionMapper(qis.Question), new TimeSpan(0, 0, 1), Interpolators.QuadraticInOut);
             }
             else if (change.Type == QuestionChangeType.Added) {
                 var qis = this.MapQuestion(change.Question);
                 this.Questions.Add(qis);
                 this.Questions.Sort((a, b) => Math.Sign(a.Position.Z - b.Position.Z)); //TODO: Insert efficiently
-                var popIn = new Animation(qis, "Scale", 0f, 0.7f, new TimeSpan(0, 0, 0, 0, 500), Interpolators.QuadraticOut);
-                var popBack = new Animation(qis, "Scale", qis.Scale, new TimeSpan(0, 0, 0, 200), Interpolators.QuadraticInOut);
-                popIn.Finished += new EventHandler((sender, e) => Animator.Animations.Add(popBack));
-                Animator.Animations.Add(popIn);
+
+                var finalScale = qis.Scale;
+                qis.Animate("Scale", 0f, 0.7f, new TimeSpan(0, 0, 0, 0, 500), Interpolators.QuadraticOut, () =>
+                    qis.Animate("Scale", qis.Scale, new TimeSpan(0, 0, 0, 0, 200), Interpolators.QuadraticInOut));
+
                 this.Plop.Play();
             }
 
