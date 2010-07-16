@@ -9,6 +9,7 @@ using SpaceOverflow.UI;
 using System.Threading;
 using SpaceOverflow.Effects;
 using StackExchange;
+using Microsoft.Xna.Framework.Audio;
 
 namespace SpaceOverflow
 {
@@ -19,7 +20,6 @@ namespace SpaceOverflow
     {
         //State
         AppState State = AppState.Ready;
-        bool InitDone = false;
 
         //Input
         KeyboardState LastKeyboardState;
@@ -48,7 +48,12 @@ namespace SpaceOverflow
         Texture2D Caret, Wheel, DropDownBackground, DropDownEdge, DropDownSplit;
         Texture2D SpaceBackground, God;
 
-        //UI
+        Model TieFighter;
+        List<TieFighter> TieFighters = new List<TieFighter>();
+        SoundEffect Plop;
+        Queue<QuestionChange> PendingChanges = new Queue<QuestionChange>();
+        DateTime LastPoll, LastChange;
+        TimeSpan ChangeInterval;
         
 
         /// <summary>

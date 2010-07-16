@@ -8,25 +8,18 @@ namespace SpaceOverflow
 {
     public class BasicQuestionSource : QuestionSource
     {
-        protected QuestionsRequest Request;
-
-        public override void BeginFetchMoreQuestions(Action<int> success, Action<Exception> error) {
-            if (!this.CanFetchMoreQuestions) return;
-
-            this.Abort();
-
+        protected override void BeginFetchQuestions(int offset, int? count, Action<IEnumerable<Question>> success, Action<Exception> error) {
             try {
-                this.Request = new QuestionsRequest(this.API) {
+                var request = new QuestionsRequest(this.API) {
                     Sort = this.Sort,
                     Order = this.Order,
-                    Page = this.AllQuestions.Count / 90 + 1,
-                    PageSize = 90
+                    Page = offset / 100 + 1,
+                    PageSize = count.HasValue ? count.Value : 100
                 };
-
-                this.Request.Begin(new Action<APIDataResponse<Question>>(response => {
-                    lock (this.AllQuestions) this.AllQuestions.AddRange(response.Items);
-                    this.CanFetchMoreQuestions = response.Page * response.PageSize < response.Total;
-                    success(response.Items.Count());
+                this.PendingRequests.Add(request);
+                request.Begin(new Action<APIDataResponse<Question>>(response => {
+                    this.Total = response.Total;
+                    success(response.Items);
                 }), error);
             }
             catch (Exception ex) {
@@ -34,22 +27,10 @@ namespace SpaceOverflow
             }
         }
 
-        public override void BeginReloadQuestions(int offset, int count, Action<IEnumerable<QuestionChange>> success, Action<Exception> error) {
-            throw new NotImplementedException();
-            try {
-                
-            }
-            catch (Exception ex) {
-                error(ex);
-            }
-        }
+        protected int? Total;
 
-        public override void Abort() {
-            if (this.Request != null) this.Request.Abort();
-        }
-
-        public override bool IsRunning {
-            get { return this.Request != null && this.Request.IsRunning; }
+        public override bool CanFetchMoreQuestions {
+            get { return !this.Total.HasValue || this.Total.Value < this.AllQuestions.Count; }
         }
     }
 }

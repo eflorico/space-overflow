@@ -14,6 +14,7 @@ namespace SpaceOverflow
     {
         bool vectorRendering = false;
         Vector2 MouseDownPosition;
+     
 
         /// <summary>
         /// Allows the game to run logic such as updating the world,
@@ -22,6 +23,12 @@ namespace SpaceOverflow
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            if (DateTime.Now - this.LastPoll > new TimeSpan(0, 1, 0)) this.Poll();
+            if (DateTime.Now - this.LastChange > this.ChangeInterval && this.PendingChanges.Count > 0)
+                this.PopNextChange();
+
+            if (Keyboard.GetState().IsKeyDown(Keys.P) && this.LastKeyboardState.IsKeyUp(Keys.P)) this.Poll();
+
             if (Keyboard.GetState().IsKeyDown(Keys.R) && this.LastKeyboardState.IsKeyUp(Keys.R)) this.vectorRendering = !this.vectorRendering;
 
             if (Keyboard.GetState().IsKeyDown(Keys.X) && this.LastKeyboardState.IsKeyUp(Keys.X)) {
@@ -79,6 +86,7 @@ namespace SpaceOverflow
         protected void UpdateSpace(GameTime gameTime) {
             var mouseState = Mouse.GetState();
             var keyboardState = Keyboard.GetState();
+            var mousePos = new Microsoft.Xna.Framework.Point(mouseState.X, mouseState.Y);
 
             //Create ray at mouse position straight through 3D space
             var nearFlat = new Vector3(mouseState.X, mouseState.Y, 0);
@@ -102,12 +110,7 @@ namespace SpaceOverflow
                 zoom = -60;
 
             if (zoom != 0) {
-                Vector3 to;
-
                 this.View.Translation -= ray.Direction * zoom;
-
-                //Apply translation
-                //this.View.Translation -= ray.Direction * zoom;
 
                 //Expand population if necessary
                 if (this.QuestionSource != null && !this.QuestionSource.IsRunning && this.QuestionSource.CanFetchMoreQuestions && 
@@ -116,43 +119,57 @@ namespace SpaceOverflow
                 }
             }
 
-            //Mouse down...
-            if (mouseState.LeftButton == ButtonState.Pressed && this.LastMouseState.LeftButton == ButtonState.Released && 
-                this.PanForce == Vector3.Zero && this.Window.ClientBounds.Contains(new Microsoft.Xna.Framework.Point(mouseState.X, mouseState.Y)))
-                foreach (var question in this.Questions.OrderByDescending(q => q.Position.Z)) {
-                    if (ray.Intersects(question.BoundingBox).HasValue) {
-                        this.ClickedQuestion = question;
-                        this.MouseDownPosition = mouseState.GetPosition();
-                        break;
+            if (this.Window.ClientBounds.Contains(mousePos)) {
+
+                //Call in TIE fighter!
+                if (mouseState.RightButton == ButtonState.Pressed && this.LastMouseState.RightButton == ButtonState.Released &&
+                    this.PanForce == Vector3.Zero)
+                    foreach (var question in this.Questions.OrderByDescending(q => q.Position.Z)) {
+                        if (ray.Intersects(question.BoundingBox).HasValue) {
+                            this.CallInTieFighter(question);
+                            break;
+                        }
                     }
+
+                //Mouse down...
+                if (mouseState.LeftButton == ButtonState.Pressed && this.LastMouseState.LeftButton == ButtonState.Released &&
+                    this.PanForce == Vector3.Zero)
+                    foreach (var question in this.Questions.OrderByDescending(q => q.Position.Z)) {
+                        if (ray.Intersects(question.BoundingBox).HasValue) {
+                            this.ClickedQuestion = question;
+                            this.MouseDownPosition = mouseState.GetPosition();
+                            break;
+                        }
+                    }
+
+
+                //...and up (finalize)
+                if (mouseState.LeftButton == ButtonState.Released && this.ClickedQuestion != null &&
+                        (this.MouseDownPosition - mouseState.GetPosition()).Length() < 5f &&
+                        ray.Intersects(this.ClickedQuestion.BoundingBox).HasValue) {
+                    this.Browser.WebBrowser.Navigate(this.ClickedQuestion.Question.TimelineUri);
+                    this.Browser.Show();
+                    this.Browser.BringToFront();
+                    this.State = AppState.BrowserOpened;
                 }
 
-            //...and up (finalize)
-            if (mouseState.LeftButton == ButtonState.Released && this.ClickedQuestion != null &&
-                    (this.MouseDownPosition - mouseState.GetPosition()).Length() < 5f &&
-                    ray.Intersects(this.ClickedQuestion.BoundingBox).HasValue) {
-                this.Browser.WebBrowser.Navigate(this.ClickedQuestion.Question.TimelineUri);
-                this.Browser.Show();
-                this.Browser.BringToFront();
-                this.State = AppState.BrowserOpened;
+                //Pan by dragging
+                if (mouseState.LeftButton == ButtonState.Pressed) {
+                    var currentMousePos = new Vector3(mouseState.X, -mouseState.Y, 0);
+
+                    if (this.LastMouseState.LeftButton == ButtonState.Pressed) {
+                        var move = currentMousePos - new Vector3(this.LastMouseState.X, -this.LastMouseState.Y, 0);
+                        if (move.Length() > 0) this.PanForce = move;
+                        this.View.Translation += move;
+                    }
+                    else
+                        this.PanForce = Vector3.Zero;
+                }
             }
 
             //Or drop it?
             if (mouseState.LeftButton == ButtonState.Released)
                 this.ClickedQuestion = null;
-
-            //Pan by dragging
-            if (mouseState.LeftButton == ButtonState.Pressed) {
-                var currentMousePos = new Vector3(mouseState.X, -mouseState.Y, 0);
-
-                if (this.LastMouseState.LeftButton == ButtonState.Pressed) {
-                    var move = currentMousePos - new Vector3(this.LastMouseState.X, -this.LastMouseState.Y, 0);
-                    if (move.Length() > 0) this.PanForce = move;
-                    this.View.Translation += move;
-                }
-                else
-                    this.PanForce = Vector3.Zero;
-            }
 
             //Pan force
             var len = this.PanForce.Length();
@@ -181,6 +198,19 @@ namespace SpaceOverflow
                 Animator.Animations.Add(new Animation(qis, "Position", new Vector3(0, 0, this.View.Translation.Z - this.NearPlane - this.FarPlane),
                     qis.Position,
                     new TimeSpan(0, 0, 0, 0, 800), Interpolators.CubicOut));
+        }
+
+        protected void CallInTieFighter(QuestionInSpace target) {
+            var fighter = new TieFighter();
+
+            var curve = new Curve3D(); 
+            curve.AddPoint(-this.View.Translation, 0);
+            curve.AddPoint(target.Position, 1);
+            curve.SetTangents();
+
+            Animator.Animations.Add(new Animation(fighter, "Position", target.Position, new TimeSpan(0, 0, 2), curve.GetInterpolator()));
+
+            this.TieFighters.Add(fighter);
         }
     }
 }

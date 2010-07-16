@@ -49,7 +49,7 @@ namespace SpaceOverflow
                                     var topLeft = new Vector2(projectedTopLeft.X, projectedTopLeft.Y);
                                     var color = new Color(Color.White, opacity);
 
-                                    this.SpriteBatch.DrawString(this.QuestionFont, question.Question.Title, topLeft, color, 0f, new Vector2(), scale, SpriteEffects.None, 0f);                                    
+                                    this.SpriteBatch.DrawString(this.QuestionFont, question.Question.Title, topLeft, color, 0f, new Vector2(), scale, SpriteEffects.None, 0f);
                                 }
                             }
                         }
@@ -108,16 +108,38 @@ namespace SpaceOverflow
                 foreach (var pass in effect.CurrentTechnique.Passes) {
                     pass.Begin();
                     this.GraphicsDevice.VertexDeclaration = vertexDeclaration;
-                    this.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleStrip, vertices, 0, 2); 
+                    this.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleStrip, vertices, 0, 2);
                     pass.End();
                 }
                 effect.End();
 
-                this.SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.None); {
+                this.SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.None);
+                {
                     this.ToolBar.DrawTo(this.SpriteBatch);
                 } this.SpriteBatch.End();
 
+                //TIE Fighter
+                {
+                    GraphicsDevice.RenderState.DepthBufferEnable = true;
 
+                    foreach (var fighter in this.TieFighters) {
+                        var transforms = new Matrix[this.TieFighter.Bones.Count];
+                        this.TieFighter.CopyAbsoluteBoneTransformsTo(transforms);
+
+                        foreach (var mesh in this.TieFighter.Meshes) {
+                            foreach (BasicEffect effect1 in mesh.Effects) {
+
+                                effect1.EnableDefaultLighting();
+                                effect1.World = this.World * transforms[mesh.ParentBone.Index] * Matrix.CreateScale(200f)  * Matrix.CreateTranslation(fighter.Position);
+                                effect1.View = this.View;
+                                effect1.Projection = this.Projection;
+                            }
+
+                            mesh.Draw();
+                        }
+                    }
+                    
+                }
 
 #if false
             //Draw axes

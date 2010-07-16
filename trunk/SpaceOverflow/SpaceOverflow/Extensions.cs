@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using SpaceOverflow.Effects;
 
 namespace SpaceOverflow
 {
@@ -34,6 +35,18 @@ namespace SpaceOverflow
 
         public static Vector2 GetPosition(this MouseState mouseState) {
             return new Vector2(mouseState.X, mouseState.Y);
+        }
+
+        public static Interpolator GetInterpolator(this Curve3D curve) {
+            return new Interpolator((from, to, progress) => {
+                var x =  new Vector3(
+                    curve.X.Evaluate(progress),
+                    curve.Y.Evaluate(progress),
+                    curve.Z.Evaluate(progress)
+                    );
+                System.Diagnostics.Debug.Print("{0},{1},{2}", x.X, x.Y, x.Z);
+                return x;
+            });
         }
     }
 

@@ -37,6 +37,7 @@ namespace SpaceOverflow
                 this.ProgressIndicator.IsVisible = false;
             });
 
+            this.LastPoll = DateTime.Now;
         }
 
         protected void LoadAndExpand() {
@@ -168,7 +169,7 @@ namespace SpaceOverflow
 
             this.QuestionMapper = new Func<Question, Vector3>(q => {
                 var z = this.ZMapper(q) * 3000 - 3000;
-                var r = (1 - this.RMapper(q)) * 1000;
+                var r = (1 - this.RMapper(q)) * 700;
                 var theta = this.ThetaMapper(q);
 
                 return new Vector3(r * (float)Math.Cos(theta), r * (float)Math.Sin(theta), z);
@@ -190,14 +191,7 @@ namespace SpaceOverflow
 
             this.CreateMappers(rawQuestions);
 
-            var questionsInSpace = rawQuestions.Select(q => 
-                new QuestionInSpace() {
-                Question = q,
-                Position = this.QuestionMapper(q),
-                TextSize = this.QuestionFont.MeasureString(q.Title),
-                Scale = 0.3f,
-                Text = this.VectorQuestionFont.Fill(q.Title) //TODO: Drop if using sprite fonts only
-            }).OrderBy(qis => qis.Position.Z).ToList();
+            var questionsInSpace = rawQuestions.Select(q => this.MapQuestion(q)).OrderBy(qis => qis.Position.Z).ToList();
 
             lock (this.Questions) this.Questions = questionsInSpace;
 
@@ -268,15 +262,75 @@ namespace SpaceOverflow
         protected void ExpandPopulation(IEnumerable<Question> rawQuestions) {
             if (rawQuestions.Count() == 0) return;
 
-            var questionsInSpace = rawQuestions.Select(q => new QuestionInSpace() {
-                Question = q,
-                Position = this.QuestionMapper(q),
-                TextSize = this.QuestionFont.MeasureString(q.Title),
-                Scale = 0.3f,
-                Text = this.VectorQuestionFont.Fill(q.Title) //TODO: Drop if using sprite fonts only
-            }).Union(this.Questions).OrderBy(qis => qis.Position.Z).ToList();
+            var questionsInSpace = rawQuestions.Select(q => this.MapQuestion(q)).Union(this.Questions).OrderBy(qis => qis.Position.Z).ToList();
 
             lock (this.Questions) this.Questions.AddRange(questionsInSpace);
+        }
+
+        protected QuestionInSpace MapQuestion(Question question) {
+            return new QuestionInSpace() {
+                Question = question,
+                Position = this.QuestionMapper(question),
+                TextSize = this.QuestionFont.MeasureString(question.Title),
+                Scale = 0.3f,
+                Text = this.VectorQuestionFont.Fill(question.Title) //TODO: Drop if using sprite fonts only
+            };
+        }
+
+        protected void Poll() {
+            if (this.QuestionSource == null || this.Questions.Count == 0) return;
+
+            var closest = this.Questions.First(qis => -this.View.Translation.Z- qis.Position.Z >= this.NearPlane);
+            var farest = this.Questions.Last(qis => -this.View.Translation.Z - qis.Position.Z <= this.FarPlane);
+            var offset = this.Questions.IndexOf(closest);
+            var count = this.Questions.IndexOf(farest) - offset;
+
+            this.ProgressLabel.Text = "Polling...";
+            this.ProgressIndicator.IsVisible = true;
+
+            this.QuestionSource.BeginReloadQuestions(offset, count, change => {
+                this.PendingChanges.Enqueue(change);
+                this.ChangeInterval = new TimeSpan((DateTime.Now - this.LastPoll + new TimeSpan(0, 1, 0)).Ticks / this.PendingChanges.Count);
+
+                this.ProgressLabel.Text = "Ready";
+                this.ProgressIndicator.IsVisible = false;
+            }, ex => {
+                this.ProgressLabel.Text = "Error";
+                this.ProgressIndicator.IsVisible = false;
+            });
+
+            this.LastPoll = DateTime.Now;
+        }
+
+        protected void PopNextChange() {
+            if (this.PendingChanges.Count == 0) return;
+
+            var change = this.PendingChanges.Dequeue();
+            if (this.PendingChanges.Count > 0) this.ChangeInterval = new TimeSpan((DateTime.Now - this.LastPoll + new TimeSpan(0, 1, 0)).Ticks / this.PendingChanges.Count);
+
+            Debug.Print("Popped change: " + change.Type.ToString() + " on " + (change.Question ?? change.OldQuestion).Title);
+
+            if (change.Type == QuestionChangeType.Removed) {
+                var question = this.Questions.Find(qis => qis.Question == change.OldQuestion);
+                this.Questions.Remove(question);
+            }
+            else if (change.Type == QuestionChangeType.Changed) {
+                var qis = this.Questions.Find(i => i.Question == change.OldQuestion);
+                qis.Question = change.Question;
+                Animator.Animations.Add(new Animation(qis, "Position", this.QuestionMapper(qis.Question), new TimeSpan(0, 0, 1), Interpolators.QuadraticInOut));
+            }
+            else if (change.Type == QuestionChangeType.Added) {
+                var qis = this.MapQuestion(change.Question);
+                this.Questions.Add(qis);
+                this.Questions.Sort((a, b) => Math.Sign(a.Position.Z - b.Position.Z)); //TODO: Insert efficiently
+                var popIn = new Animation(qis, "Scale", 0f, 0.7f, new TimeSpan(0, 0, 0, 0, 500), Interpolators.QuadraticOut);
+                var popBack = new Animation(qis, "Scale", qis.Scale, new TimeSpan(0, 0, 0, 200), Interpolators.QuadraticInOut);
+                popIn.Finished += new EventHandler((sender, e) => Animator.Animations.Add(popBack));
+                Animator.Animations.Add(popIn);
+                this.Plop.Play();
+            }
+
+            this.LastChange = DateTime.Now;
         }
     }
 }

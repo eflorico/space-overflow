@@ -14,17 +14,17 @@ namespace SpaceOverflow
         protected UsersRequest UsersRequest;
         protected QuestionsRequestBase QuestionsRequest;
 
-        public override void BeginFetchMoreQuestions(Action<int> success, Action<Exception> error) {
+
+        protected override void BeginFetchQuestions(int offset, int? count, Action<IEnumerable<Question>> success, Action<Exception> error) {
             try {
                 if (!this.AuthorID.HasValue) {
-                    this.UsersRequest = new UsersRequest(this.API) {
+                    var request = new UsersRequest(this.API) {
                         Filter = this.AuthorName,
                         PageSize = 100
                     };
-                    this.UsersRequest.Begin(new Action<APIDataResponse<User>>(userResponse => {
-                        this.UsersRequest = null;
-
-                        var users = userResponse.Items.OrderBy(user => {
+                    this.PendingRequests.Add(request);
+                    request.Begin(new Action<APIDataResponse<User>>(response => {
+                        var users = response.Items.OrderBy(user => {
                             if (user.DisplayName.ToLower() == this.AuthorName.ToLower()) return 1f;
                             else if (user.DisplayName.ToLower().Contains(this.AuthorName.ToLower())) return 0.5f;
                             else return 0f;
@@ -34,23 +34,21 @@ namespace SpaceOverflow
 
                         this.AuthorID = users.First().ID;
 
-                        this.BeginFetchMoreQuestions(success, error);
+                        this.BeginFetchQuestions(offset, count, success, error);
                     }), error);
                 }
                 else {
-                    this.QuestionsRequest = new UsersQuestionsRequest(this.API) {
+                    var request = new UsersQuestionsRequest(this.API) {
                         Sort = this.Sort,
                         Order = this.Order,
-                        Page = this.AllQuestions.Count / 90,
-                        PageSize = 90,
+                        Page = offset / 100 + 1,
+                        PageSize = count.HasValue ? count.Value : 100,
                         UserID = this.AuthorID.Value
                     };
-
-                    this.QuestionsRequest.Begin(questionResponse => {
-                        lock (this.AllQuestions) this.AllQuestions.AddRange(questionResponse.Items);
-                        this.CanFetchMoreQuestions = questionResponse.Page * questionResponse.PageSize < questionResponse.Total;
-                        ++this.QuestionsRequest.Page;
-                        success(questionResponse.Items.Count());
+                    this.PendingRequests.Add(request);
+                    request.Begin(response => {
+                        this.Total = response.Total;
+                        success(response.Items);
                     }, error);
                 }
             }
@@ -59,18 +57,10 @@ namespace SpaceOverflow
             }
         }
 
-        public override void BeginReloadQuestions(int offset, int count, Action<IEnumerable<QuestionChange>> success, Action<Exception> error) {
-            throw new NotImplementedException();
-        }
+        protected int? Total;
 
-        public override void Abort() {
-            throw new NotImplementedException();
+        public override bool CanFetchMoreQuestions {
+            get { return !this.Total.HasValue || this.Total.Value < this.AllQuestions.Count; }
         }
-
-        public override bool IsRunning {
-            get { throw new NotImplementedException(); }
-        }
-
-       
     }
 }
