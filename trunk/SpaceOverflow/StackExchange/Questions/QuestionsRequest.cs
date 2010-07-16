@@ -16,7 +16,7 @@ namespace StackExchange
 
         protected override string Route {
             get {
-                if (this.IDs.Count > 0) return "questions/" + this.IDs.Aggregate("", (sum, item) => sum + item + ",");
+                if (this.IDs.Count > 0) return "questions/" + this.IDs.Aggregate("", (sum, item) => sum + item + ";").TrimEnd(';');
                 else return "questions";
             }
         }
