@@ -173,7 +173,9 @@
   <ItemGroup>
     <Compile Include="App.GUI.cs" />
     <Compile Include="App.Load.cs" />
-    <Compile Include="App.Map.cs" />
+    <Compile Include="App.Map.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="App.Poll.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Curve3D.cs" />
