@@ -37,17 +37,17 @@ namespace SpaceOverflow
             return new Vector2(mouseState.X, mouseState.Y);
         }
 
-        public static Interpolator GetInterpolator(this Curve3D curve) {
-            return new Interpolator((from, to, progress) => {
-                var x =  new Vector3(
-                    curve.X.Evaluate(progress),
-                    curve.Y.Evaluate(progress),
-                    curve.Z.Evaluate(progress)
-                    );
-                System.Diagnostics.Debug.Print("{0},{1},{2}", x.X, x.Y, x.Z);
-                return x;
-            });
-        }
+        //public static Interpolator GetInterpolator(this Curve3D curve) {
+        //    return new Interpolator((from, to, progress) => {
+        //        var x =  new Vector3(
+        //            curve.X.Evaluate(progress),
+        //            curve.Y.Evaluate(progress),
+        //            curve.Z.Evaluate(progress)
+        //            );
+        //        System.Diagnostics.Debug.Print("{0},{1},{2}", x.X, x.Y, x.Z);
+        //        return x;
+        //    });
+        //}
     }
 
     public enum TextAlignment

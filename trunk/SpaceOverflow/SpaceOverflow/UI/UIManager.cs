@@ -8,9 +8,8 @@ namespace SpaceOverflow.UI
 {
     public class UIManager
     {
-        public UIManager(UIElement root, Effect maskEffect, GraphicsDevice device) {
+        public UIManager(UIElement root, GraphicsDevice device) {
             this.UIRoot = root;
-            this.MaskEffect = maskEffect;
             this.Device = device;
 
             root.Manager = this;
@@ -25,7 +24,6 @@ namespace SpaceOverflow.UI
         }
 
         public UIElement UIRoot { get; private set; }
-        public Effect MaskEffect { get; private set; }
         public GraphicsDevice Device { get; private set; }
 
         private Focusable _focus;

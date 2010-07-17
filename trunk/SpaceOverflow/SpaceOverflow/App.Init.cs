@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nuclex.Fonts;
+//using Nuclex.Fonts;
 using StackExchange;
 using System.Threading;
 using SpaceOverflow.UI;
@@ -71,7 +71,21 @@ namespace SpaceOverflow
             StackAPI.Key = "yLHF9Tb_NEGJY_el8Gu1Bw";
 
             EventInput.Initialize(this.Window);
-            
+
+            var current = new Vector3();
+            var next = new Vector3(1, 1, -1);
+
+            var normal = new Vector3(1, 1, -1);
+
+            var direction = (next - current) * normal;
+            direction.Normalize();
+
+            System.Diagnostics.Debug.Print("TEST: Direction: {0} {1} {2}", direction.X, direction.Y, direction.Z);
+
+            var theta = Math.Acos(direction.Z / Math.Sqrt(Math.Pow(direction.X, 2) + Math.Pow(direction.Y, 2) + Math.Pow(direction.Z, 2)));
+            var phi = Math.Atan2(direction.Y, direction.X);
+
+            System.Diagnostics.Debug.Print("Theta: {0} Phi: {1}", MathHelper.ToDegrees((float)theta), MathHelper.ToDegrees((float)phi));
 
             base.Initialize();
         }
@@ -98,10 +112,9 @@ namespace SpaceOverflow
         /// </summary>
         protected override void LoadContent() {
             this.SpriteBatch = new SpriteBatch(GraphicsDevice);
-            this.TextBatch = new TextBatch(GraphicsDevice);
+            //this.TextBatch = new TextBatch(GraphicsDevice);
 
-            //Load vector font :-)
-            this.VectorQuestionFont = this.Content.Load<VectorFont>("VectorFont");
+            //this.VectorQuestionFont = this.Content.Load<VectorFont>("VectorFont");
             this.QuestionFont = this.Content.Load<SpriteFont>("QuestionFont");
             this.UIFont = this.Content.Load<SpriteFont>("UIFont");
             this.SmallUIFont = this.Content.Load<SpriteFont>("SmallUIFont");
@@ -117,8 +130,12 @@ namespace SpaceOverflow
             this.TextBoxEdge = this.Content.Load<Texture2D>("TextBoxEdge");
             this.TextBoxRoundedEdge = this.Content.Load<Texture2D>("TextBoxRoundedEdge");
             this.TextBoxIndicator = this.Content.Load<Texture2D>("TextBoxIndicator");
-            this.DropDownBackground = this.Content.Load<Texture2D>("DropDownBackground");
-            this.DropDownEdge = this.Content.Load<Texture2D>("DropDownEdge");
+            this.DropDownBackgroundS = this.Content.Load<Texture2D>("DropDownBackgroundS");
+            this.DropDownEdgeS = this.Content.Load<Texture2D>("DropDownEdgeS");
+            this.DropDownBackgroundM = this.Content.Load<Texture2D>("DropDownBackgroundM");
+            this.DropDownEdgeM = this.Content.Load<Texture2D>("DropDownEdgeM");
+            this.DropDownBackgroundL = this.Content.Load<Texture2D>("DropDownBackgroundL");
+            this.DropDownEdgeL = this.Content.Load<Texture2D>("DropDownEdgeL");
             this.DropDownSplit = this.Content.Load<Texture2D>("DropDownSplit");
             this.ToolBarBackground = new Texture2D(this.GraphicsDevice, 1, 1, 1, TextureUsage.Tiled, SurfaceFormat.Color);
             this.ToolBarBackground.FillSolid(new Color(83, 80, 133, 122));
@@ -132,9 +149,6 @@ namespace SpaceOverflow
 
             //Sounds
             this.Plop = this.Content.Load<SoundEffect>("Plop");
-
-            //Effects
-            this.MaskEffect = this.Content.Load<Effect>("MaskEffect");
 
             this.InitializeGUI();
             this.ReloadAndPopulate();

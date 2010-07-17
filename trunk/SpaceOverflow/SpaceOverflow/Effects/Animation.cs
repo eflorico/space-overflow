@@ -8,26 +8,6 @@ namespace SpaceOverflow.Effects
     /// </summary>
     public class Animation
     {
-        //public Animation(object targetObject, string targetPropertyName, object to) 
-        //    : this(targetObject, targetPropertyName, to, new TimeSpan(0, 0, 0, 1)) { }
-
-        //public Animation(object targetObject, string targetPropertyName, object to, TimeSpan duration) 
-        //    : this(targetObject, targetPropertyName, to, duration, Interpolators.Linear) { }
-
-        //public Animation(object targetObject, string targetPropertyName, object to, TimeSpan duration, Interpolator interpolator)
-        //    : this(targetObject, targetPropertyName, null, to, duration, interpolator) { }
-
-        //public Animation(object targetObject, string targetPropertyName, object from, object to, TimeSpan duration, Interpolator interpolator) {
-        //    this.TargetObject = targetObject;
-        //    this.TargetPropertyName = targetPropertyName;
-        //    this.TargetProperty = new PropertyOrFieldInstanceDescriptor(targetObject, targetPropertyName);
-        //    this.From = from;
-        //    this.To = to;
-        //    this.Duration = duration;
-        //    this.Interpolator = interpolator;
-        //    this.Repetitions = 1;
-        //}
-
         public Animation() {
             this.Repetitions = 1;
         }
@@ -61,7 +41,8 @@ namespace SpaceOverflow.Effects
         protected PropertyOrFieldInstanceDescriptor TargetProperty { get; set; }
 
         public void Update(GameTime gameTime) {
-            if (this.State != AnimationState.Animating) { //Begin animation
+            //Begin animation
+            if (this.State != AnimationState.Animating) { 
                 this.State = AnimationState.Animating;
                 this.StartTime = gameTime.TotalGameTime;
                 this.ActualFrom = this.From ?? this.TargetProperty.Value;
@@ -69,13 +50,13 @@ namespace SpaceOverflow.Effects
             else { //Update animation
                 var progress = (float)(gameTime.TotalGameTime - this.StartTime).Ticks / (float)this.Duration.Ticks;
                 if (progress < 1) this.TargetProperty.Value = this.Interpolator(this.ActualFrom, this.To, progress);
-                else { //Finish animation
-                    if (this.Repetitions > 0 && --this.Repetitions == 0) {
+                else {
+                    if (this.Repetitions > 0 && --this.Repetitions == 0) { //Finish animation
                         this.State = AnimationState.Finished;
                         this.TargetProperty.Value = this.To;
                         if (this.Finished != null) this.Finished(this, EventArgs.Empty);
                     }
-                    else {
+                    else { //Repeat
                         this.TargetProperty.Value = this.ActualFrom;
                         this.StartTime = gameTime.TotalGameTime;
                     }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Nuclex.Fonts;
+//using Nuclex.Fonts;
 using System.Drawing;
 using SpaceOverflow.UI;
 using System.Threading;
@@ -31,7 +31,7 @@ namespace SpaceOverflow
         SpriteBatch SpriteBatch;
 
         //3D Drawing
-        TextBatch TextBatch;
+        //TextBatch TextBatch;
         Matrix World, View, Projection;
         float FarPlane, FarFade, NearFade, NearPlane;
 
@@ -39,20 +39,21 @@ namespace SpaceOverflow
         GraphicsDeviceManager DeviceManager;
 
         //Font resources
-        VectorFont VectorQuestionFont;
+        //VectorFont VectorQuestionFont;
         SpriteFont QuestionFont, UIFont, SmallUIFont;
 
         //Texture resources
         Texture2D ToolBarBackground, ButtonBackground, ButtonEdge, ButtonSplit, ButtonIndicator;
         Texture2D TextBoxBackground, TextBoxEdge, TextBoxRoundedEdge, TextBoxIndicator;
-        Texture2D Caret, Wheel, DropDownBackground, DropDownEdge, DropDownSplit;
+        Texture2D Caret, Wheel, DropDownBackgroundS, DropDownEdgeS, DropDownBackgroundM, DropDownEdgeM, DropDownBackgroundL, DropDownEdgeL, DropDownSplit;
         Texture2D SpaceBackground, God;
 
+        //3D Model resources
         Model TieFighter;
-        List<TieFighter> TieFighters = new List<TieFighter>();
+
+        //Audio resources
         SoundEffect Plop;
-        
-        
+
 
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload
@@ -60,10 +61,8 @@ namespace SpaceOverflow
         /// </summary>
         protected override void UnloadContent()
         {
+            this.AbortLoading();
             this.SpriteBatch.Dispose();
-
-            this.TextBatch.Dispose();
-
             this.SpaceBackground.Dispose();
             this.ButtonBackground.Dispose();
             this.ButtonEdge.Dispose();
@@ -75,15 +74,6 @@ namespace SpaceOverflow
     enum AppState
     {
         Ready,
-        Imploding,
-        Waiting,
-        Exploding,
         BrowserOpened
-    }
-
-    enum RequestType
-    {
-        Questions,
-        Search
     }
 }

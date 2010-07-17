@@ -50,11 +50,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="VectorFont.spritefont">
+    <None Include="VectorFont.spritefont">
       <Name>VectorFont</Name>
       <Importer>FontDescriptionImporter</Importer>
       <Processor>NuclexVectorFontDescriptionProcessor</Processor>
-    </Compile>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="QuestionFont.spritefont">
@@ -166,13 +166,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MaskEffect.fx">
-      <Name>MaskEffect</Name>
-      <Importer>EffectImporter</Importer>
-      <Processor>EffectProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="CornerMask.png">
       <Name>CornerMask</Name>
       <Importer>TextureImporter</Importer>
@@ -191,6 +184,40 @@
       <Name>Plop</Name>
       <Importer>WavImporter</Importer>
       <Processor>SoundEffectProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DropDownBackgroundM.png">
+      <Name>DropDownBackgroundM</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="DropDownBackgroundS.png">
+      <Name>DropDownBackgroundS</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="DropDownEdgeM.png">
+      <Name>DropDownEdgeM</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="DropDownEdgeS.png">
+      <Name>DropDownEdgeS</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DropDownBackgroundL.png">
+      <Name>DropDownBackgroundL</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="DropDownEdgeL.png">
+      <Name>DropDownEdgeL</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />

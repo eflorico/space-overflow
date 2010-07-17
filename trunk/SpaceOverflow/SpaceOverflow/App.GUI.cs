@@ -31,7 +31,6 @@ namespace SpaceOverflow
         BrowserOverlay Browser;
 
         Background IndicatorBackground, TextBoxIndicatorBackground;
-        Effect MaskEffect;
         Texture2D CornerMask;
         #endregion
 
@@ -54,7 +53,7 @@ namespace SpaceOverflow
                 }
             };
             this.ToolBar.Backgrounds.Add(new Background(this.ToolBarBackground));
-            this.UIManager = new UIManager(this.ToolBar, this.MaskEffect, this.GraphicsDevice);
+            this.UIManager = new UIManager(this.ToolBar, this.GraphicsDevice);
 
             //Browse or search
             this.ToolBar.AddChild(this.RequestTypeButton = new SplitButton());
@@ -63,8 +62,16 @@ namespace SpaceOverflow
             this.RequestTypeButton.SelectedItem = this.BrowseButton;
             this.RequestTypeButton.SelectedItemChanged += new EventHandler<SelectedItemChangedEventArgs>((sender, e) => {
                 if (e.OldSelectedChild != e.NewSelectedChild)
-                    if (e.NewSelectedChild == this.BrowseButton) this.ToolBar.RemoveChild(this.SearchOptions);
-                    else this.ToolBar.InsertChild(1, this.SearchOptions);
+                    if (e.NewSelectedChild == this.BrowseButton) { //Toggle search options and featured/hot sort
+                        this.ToolBar.RemoveChild(this.SearchOptions);
+                        this.ZOrderButton.AddItem(this.ZOrderButtons.First(pair => pair.Value == QuestionSort.Featured).Key);
+                        this.ZOrderButton.AddItem(this.ZOrderButtons.First(pair => pair.Value == QuestionSort.Hot).Key);
+                    }
+                    else {
+                        this.ToolBar.InsertChild(1, this.SearchOptions);
+                        this.ZOrderButton.RemoveItem(this.ZOrderButtons.First(pair => pair.Value == QuestionSort.Featured).Key);
+                        this.ZOrderButton.RemoveItem(this.ZOrderButtons.First(pair => pair.Value == QuestionSort.Hot).Key);
+                    }
                 this.ReloadAndPopulate();
             });
             
@@ -82,6 +89,12 @@ namespace SpaceOverflow
             this.ZOrderButtons.Add(this.ZOrderButton.AddItem(new Button() { Text = "Hottest" }), QuestionSort.Hot);
             this.ZOrderButtons.Add(this.ZOrderButton.AddItem(new Button() { Text = "Latest activity" }), QuestionSort.Activity);
 
+            this.ZOrderButton.DropDownMenu.Backgrounds.AddRange(new Background[]{
+                new Background(this.DropDownEdgeM, BackgroundPosition.Left),
+                new Background(this.DropDownEdgeM, BackgroundPosition.Right, SpriteEffects.FlipHorizontally),
+                new Background(this.DropDownBackgroundM)
+            });
+
             this.ZOrderButton.SelectedItemChanged += new EventHandler<SelectedItemChangedEventArgs>((sender, e) =>
                 this.ReloadAndPopulate());
 
@@ -93,8 +106,14 @@ namespace SpaceOverflow
             this.ROrderButton.AddItem(this.ROwnerReputationButton = new Button() { Text = "Best owner rep." });
             this.ROrderButton.AddItem(this.RActiveButton = new Button() { Text = "Latest activity" });
 
+            this.ROrderButton.DropDownMenu.Backgrounds.AddRange(new Background[]{
+                new Background(this.DropDownEdgeS, BackgroundPosition.Left),
+                new Background(this.DropDownEdgeS, BackgroundPosition.Right, SpriteEffects.FlipHorizontally),
+                new Background(this.DropDownBackgroundS)
+            });
+
             this.ROrderButton.SelectedItemChanged += new EventHandler<SelectedItemChangedEventArgs>((sender, e) =>
-                this.ReMap());
+                this.ReMapRAndTheta());
 
             //Search options
             this.SearchOptions = new StackPanel();
@@ -129,9 +148,9 @@ namespace SpaceOverflow
             this.SearchPicker.Button.Padding = new Thickness(12, 10, 0, 10);
             this.SearchPicker.Button.Size = new Vector2(-1, 28);
             this.SearchPicker.DropDownMenu.Backgrounds.AddRange(new Background[]{
-                new Background(this.DropDownEdge, BackgroundPosition.Left),
-                new Background(this.DropDownEdge, BackgroundPosition.Right, SpriteEffects.FlipHorizontally),
-                new Background(this.DropDownBackground)
+                new Background(this.DropDownEdgeS, BackgroundPosition.Left),
+                new Background(this.DropDownEdgeS, BackgroundPosition.Right, SpriteEffects.FlipHorizontally),
+                new Background(this.DropDownBackgroundS)
             });
             this.SearchPicker.DropDownMenu.Split = this.DropDownSplit;
             this.SearchPicker.DropDownMenu.Padding = new Thickness(1);
@@ -152,21 +171,26 @@ namespace SpaceOverflow
                 new Background(this.ButtonBackground),
                 new Background(this.ButtonIndicator, BackgroundPosition.Center)
             });
+            this.SourceButton.DropDownMenu.Backgrounds.AddRange(new Background[]{
+                new Background(this.DropDownEdgeM, BackgroundPosition.Left),
+                new Background(this.DropDownEdgeM, BackgroundPosition.Right, SpriteEffects.FlipHorizontally),
+                new Background(this.DropDownBackgroundM)
+            });
             
-
             //Load cached sites
             if (Config.SiteCache.Count > 0)
                 this.PopulateSources(Config.SiteCache);
-            else
-                new StackAuthSitesRequest().Begin(sites => {
-                    sites = sites.Where(site => site.State == APIState.Normal || site.State == APIState.LinkedMeta);
+            
+            //Update cache in background
+            new StackAuthSitesRequest().Begin(sites => {
+                sites = sites.Where(site => site.State == APIState.Normal);
 
-                    Config.SiteCache.Clear();
-                    Config.SiteCache.AddRange(sites);
-                    Config.Save();
+                Config.SiteCache.Clear();
+                Config.SiteCache.AddRange(sites);
+                Config.Save();
 
-                    this.PopulateSources(sites);
-                }, error => { });
+                this.PopulateSources(sites);
+            }, error => { });
 
             this.SourceButton.SelectedItemChanged += new EventHandler<SelectedItemChangedEventArgs>((sender, e) => this.ReloadAndPopulate());
 
@@ -191,11 +215,6 @@ namespace SpaceOverflow
                 dropDown.Backgrounds.Add(new Background(this.ButtonIndicator, BackgroundPosition.Center));
                 dropDown.Button.Padding = new Thickness(12, 10, 0, 10);
                 dropDown.Button.Size = new Vector2(-1, 28);
-                dropDown.DropDownMenu.Backgrounds.AddRange(new Background[]{
-                    new Background(this.DropDownEdge, BackgroundPosition.Left),
-                    new Background(this.DropDownEdge, BackgroundPosition.Right, SpriteEffects.FlipHorizontally),
-                    new Background(this.DropDownBackground)
-                });
                 dropDown.DropDownMenu.CornerMask = this.CornerMask;
                 dropDown.DropDownMenu.Split = this.DropDownSplit;
                 dropDown.DropDownMenu.Padding = new Thickness(1);
@@ -249,19 +268,27 @@ namespace SpaceOverflow
             this.Browser = new BrowserOverlay();
         }
 
+        /// <summary>
+        /// Populates the source drop down with the specified source sites.
+        /// </summary>
         protected void PopulateSources(IEnumerable<StackAPI> sites) {
             lock (this.SourceButton) {
-                while (this.SourceButton.Items.Count > 0) this.SourceButton.RemoveItem(this.SourceButton.Items[0]);
-                this.SourceButtons.Clear();
+                //Don't remove sites that haven't changed to not trigger SelectedItemChanged
+                var remaining = sites.Intersect(this.SourceButtons.Values, StackAPIComparer.Instance);
 
-                foreach (var site in sites) {
+                foreach (var oldSite in this.SourceButtons.ToList().Where(pair => !remaining.Contains(pair.Value, StackAPIComparer.Instance))) {
+                    this.SourceButtons.Remove(oldSite.Key);
+                    this.SourceButton.RemoveItem(oldSite.Key);
+                }
+
+                foreach (var newSite in sites.Where(site => !remaining.Contains(site, StackAPIComparer.Instance))) {
                     var button = new Button() {
-                        Text = site.Name,
+                        Text = newSite.Name,
                         Padding = new Thickness(5, 10, 0, 10),
                         Size = new Vector2(-1, 27)
                     };
 
-                    this.SourceButtons.Add(button, site);
+                    this.SourceButtons.Add(button, newSite);
                     this.SourceButton.AddItem(button);
                 }
             }

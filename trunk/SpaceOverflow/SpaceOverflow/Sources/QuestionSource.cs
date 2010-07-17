@@ -14,7 +14,14 @@ namespace SpaceOverflow
 
         public StackAPI API { get; set; }
 
+        /// <summary>
+        /// All questions that have been loaded by the source so far.
+        /// </summary>
         public List<Question> AllQuestions { get; private set; }
+
+        /// <summary>
+        /// Determines if the question source can probably load further questions or not.
+        /// </summary>
         public abstract bool CanFetchMoreQuestions { get; }
 
         protected abstract void BeginFetchQuestions(int offset, int? count, Action<IEnumerable<Question>> success, Action<Exception> error);
