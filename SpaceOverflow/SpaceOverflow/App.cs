@@ -46,7 +46,7 @@ namespace SpaceOverflow
         Texture2D ToolBarBackground, ButtonBackground, ButtonEdge, ButtonSplit, ButtonIndicator;
         Texture2D TextBoxBackground, TextBoxEdge, TextBoxRoundedEdge, TextBoxIndicator;
         Texture2D Caret, Wheel, DropDownBackgroundS, DropDownEdgeS, DropDownBackgroundM, DropDownEdgeM, DropDownSplit;
-        Texture2D DropDownBackgroundL, DropDownEdgeL;
+        //Texture2D DropDownBackgroundL, DropDownEdgeL;
         Texture2D SpaceBackground, God;
 
         //3D Model resources
