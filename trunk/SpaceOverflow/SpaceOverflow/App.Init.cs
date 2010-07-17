@@ -134,18 +134,18 @@ namespace SpaceOverflow
             this.DropDownEdgeS = this.Content.Load<Texture2D>("DropDownEdgeS");
             this.DropDownBackgroundM = this.Content.Load<Texture2D>("DropDownBackgroundM");
             this.DropDownEdgeM = this.Content.Load<Texture2D>("DropDownEdgeM");
-            this.DropDownBackgroundL = this.Content.Load<Texture2D>("DropDownBackgroundL");
-            this.DropDownEdgeL = this.Content.Load<Texture2D>("DropDownEdgeL");
+            //this.DropDownBackgroundL = this.Content.Load<Texture2D>("DropDownBackgroundL");
+            //this.DropDownEdgeL = this.Content.Load<Texture2D>("DropDownEdgeL");
             this.DropDownSplit = this.Content.Load<Texture2D>("DropDownSplit");
             this.ToolBarBackground = new Texture2D(this.GraphicsDevice, 1, 1, 1, TextureUsage.Tiled, SurfaceFormat.Color);
             this.ToolBarBackground.FillSolid(new Color(83, 80, 133, 122));
             this.Caret = new Texture2D(this.GraphicsDevice, 1, 1, 1, TextureUsage.Tiled, SurfaceFormat.Color);
             this.Caret.FillSolid(new Color(84, 84, 84));
             this.Wheel = this.Content.Load<Texture2D>("Wheel");
-            this.CornerMask = this.Content.Load<Texture2D>("CornerMask");
+            //this.CornerMask = this.Content.Load<Texture2D>("CornerMask");
 
             //Models
-            this.TieFighter = this.Content.Load<Model>("TieFighter");
+            //this.TieFighter = this.Content.Load<Model>("TieFighter");
 
             //Sounds
             this.Plop = this.Content.Load<SoundEffect>("Plop");

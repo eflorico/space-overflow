@@ -171,7 +171,7 @@ namespace SpaceOverflow.UI
         /// <summary>
         /// Corner radius that is applied to the background.
         /// </summary>
-        public Texture2D CornerMask { get; set; }
+        //public Texture2D CornerMask { get; set; }
 
         /// <summary>
         /// List of backgrounds. Drawn in specified order.

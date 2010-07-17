@@ -31,7 +31,7 @@ namespace SpaceOverflow
         BrowserOverlay Browser;
 
         Background IndicatorBackground, TextBoxIndicatorBackground;
-        Texture2D CornerMask;
+        //Texture2D CornerMask;
         #endregion
 
         protected void InitializeGUI() {
@@ -215,7 +215,6 @@ namespace SpaceOverflow
                 dropDown.Backgrounds.Add(new Background(this.ButtonIndicator, BackgroundPosition.Center));
                 dropDown.Button.Padding = new Thickness(12, 10, 0, 10);
                 dropDown.Button.Size = new Vector2(-1, 28);
-                dropDown.DropDownMenu.CornerMask = this.CornerMask;
                 dropDown.DropDownMenu.Split = this.DropDownSplit;
                 dropDown.DropDownMenu.Padding = new Thickness(1);
             }
