@@ -30,23 +30,26 @@
         {
             System.Windows.Forms.ToolStripButton CloseButton;
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BrowserOverlay));
+            System.Windows.Forms.ToolStripButton OpenInBrowserButton;
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.BackButton = new System.Windows.Forms.ToolStripButton();
             this.ForwardButton = new System.Windows.Forms.ToolStripButton();
             this.WebBrowser = new System.Windows.Forms.WebBrowser();
             CloseButton = new System.Windows.Forms.ToolStripButton();
+            OpenInBrowserButton = new System.Windows.Forms.ToolStripButton();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // CloseButton
             // 
+            CloseButton.AccessibleRole = System.Windows.Forms.AccessibleRole.ScrollBar;
             CloseButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             CloseButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             CloseButton.Image = ((System.Drawing.Image)(resources.GetObject("CloseButton.Image")));
             CloseButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             CloseButton.Name = "CloseButton";
-            CloseButton.Size = new System.Drawing.Size(40, 22);
-            CloseButton.Text = "Close";
+            CloseButton.Size = new System.Drawing.Size(116, 22);
+            CloseButton.Text = "Return to the space!";
             CloseButton.Click += new System.EventHandler(this.CloseButton_Click);
             // 
             // toolStrip1
@@ -55,7 +58,8 @@
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.BackButton,
             this.ForwardButton,
-            CloseButton});
+            CloseButton,
+            OpenInBrowserButton});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Padding = new System.Windows.Forms.Padding(1, 0, 1, 0);
@@ -95,6 +99,16 @@
             this.WebBrowser.TabIndex = 0;
             this.WebBrowser.Url = new System.Uri("", System.UriKind.Relative);
             this.WebBrowser.Navigated += new System.Windows.Forms.WebBrowserNavigatedEventHandler(this.WebBrowser_Navigated);
+            // 
+            // OpenInBrowserButton
+            // 
+            OpenInBrowserButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            OpenInBrowserButton.Image = ((System.Drawing.Image)(resources.GetObject("OpenInBrowserButton.Image")));
+            OpenInBrowserButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            OpenInBrowserButton.Name = "OpenInBrowserButton";
+            OpenInBrowserButton.Size = new System.Drawing.Size(168, 22);
+            OpenInBrowserButton.Text = "Open in your favorite browser";
+            OpenInBrowserButton.Click += new System.EventHandler(this.OpenInBrowserButton_Click);
             // 
             // BrowserOverlay
             // 

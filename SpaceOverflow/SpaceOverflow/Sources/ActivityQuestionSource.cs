@@ -26,7 +26,7 @@ namespace SpaceOverflow
                     var questionIds = (from item in timelineResponse.Items
                                        where item.PostType == PostType.Question
                                        select item.PostID.Value).Distinct();
-                    
+
                     this.BeginFetchQuestionsByID(questionIds, success, error);
                 }
                 {
@@ -39,7 +39,7 @@ namespace SpaceOverflow
                         answersRequest.IDs.AddRange(answerIds.Skip(i).Take(30));
                         this.PendingRequests.Add(answersRequest);
 
-                        answersRequest.Begin(answersResponse => 
+                        answersRequest.Begin(answersResponse =>
                             this.BeginFetchQuestionsByID(answersResponse.Items.Select(item => item.QuestionID), success, error)
                         , error);
                     }
@@ -66,7 +66,7 @@ namespace SpaceOverflow
         protected int? Total;
 
         public override bool CanFetchMoreQuestions {
-            get { return !this.Total.HasValue || this.Total.Value < this.AllQuestions.Count; }
+            get { return !this.Total.HasValue || this.Total.Value > this.AllQuestions.Count; }
         }
 
         

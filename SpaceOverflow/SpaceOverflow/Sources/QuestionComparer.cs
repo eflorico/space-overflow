@@ -19,11 +19,12 @@ namespace SpaceOverflow
             }
         }
 
-
         #region IEqualityComparer<Question> Member
 
         public bool Equals(Question x, Question y) {
-            return x.ID == y.ID;
+            if (x == null && y == null) return true;
+            else if (x == null || y == null) return false;
+            else return x.ID == y.ID;
         }
 
         public int GetHashCode(Question obj) {

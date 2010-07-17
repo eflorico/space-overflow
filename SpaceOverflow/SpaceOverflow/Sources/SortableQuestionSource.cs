@@ -13,18 +13,23 @@ namespace SpaceOverflow
 
         protected override void BeginFetchQuestions(int offset, int? count, Action<IEnumerable<Question>> success, Action<Exception> error) {
             try {
-                var request = this.BuildRequest();
-                request.Sort = this.Sort;
-                request.Order = this.Order;
-                request.Page = offset / 100 + 1;
-                request.PageSize = count.HasValue ? count.Value : 100;
+                if (!count.HasValue) count = 100;
+                var page = offset / 100;
 
-                this.PendingRequests.Add(request);
+                do {
+                    var request = this.BuildRequest();
+                    request.Sort = this.Sort;
+                    request.Order = this.Order;
+                    request.Page = ++page;
+                    request.PageSize = Math.Min(100, count.Value - ((page - 1) * 100 - offset));
 
-                request.Begin(new Action<APIDataResponse<Question>>(response => {
-                    this.Total = response.Total;
-                    success(response.Items);
-                }), error);
+                    this.PendingRequests.Add(request);
+
+                    request.Begin(new Action<APIDataResponse<Question>>(response => {
+                        this.Total = response.Total;
+                        success(response.Items);
+                    }), error);
+                } while(page * 100 < offset + count.Value);
             }
             catch (Exception ex) {
                 error(ex);
@@ -34,7 +39,7 @@ namespace SpaceOverflow
         protected int? Total;
 
         public override bool CanFetchMoreQuestions {
-            get { return !this.Total.HasValue || this.Total.Value < this.AllQuestions.Count; }
+            get { return !this.Total.HasValue || this.Total.Value > this.AllQuestions.Count; }
         }
 
         protected abstract APISortedDataRequest<Question, QuestionSort> BuildRequest();

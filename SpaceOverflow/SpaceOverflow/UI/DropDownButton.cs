@@ -36,11 +36,11 @@ namespace SpaceOverflow.UI
         }
 
         protected override void OnItemRemoved(UIElement item) {
-            base.OnItemRemoved(item);
-
-            //Remove item from drop-down
+            if (this.SelectedItem == item) this.SelectedItem = this.Items.FirstOrDefault();
             this.DropDownMenu.RemoveChild(item);
             item.Clicked -= this.ItemClicked;
+
+            base.OnItemRemoved(item);
         }
 
         protected override void OnSelectedItemChanged(UIElement oldSelectedItem, UIElement newSelectedItem) {

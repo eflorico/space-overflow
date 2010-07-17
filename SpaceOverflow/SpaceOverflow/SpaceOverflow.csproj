@@ -70,14 +70,6 @@
     <Reference Include="mscorlib">
       <Private>False</Private>
     </Reference>
-    <Reference Include="Nuclex.Fonts, Version=2.0.3639.30747, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Libs\Nuclex Framework\Nuclex.Fonts.dll</HintPath>
-    </Reference>
-    <Reference Include="Nuclex.Graphics, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Libs\Nuclex Framework\Nuclex.Graphics.dll</HintPath>
-    </Reference>
     <Reference Include="System">
       <Private>False</Private>
     </Reference>
@@ -132,7 +124,6 @@
     <Compile Include="UI\StackPanel.cs" />
     <Compile Include="UI\Thickness.cs" />
     <Compile Include="UI\UIManager.cs" />
-    <Compile Include="XNABrowser.cs" />
   </ItemGroup>
   <ItemGroup>
     <NestedContentProject Include="Content\Content.contentproj">
@@ -195,6 +186,7 @@
     <Compile Include="Sources\QuestionChange.cs" />
     <Compile Include="Sources\SearchQuestionSource.cs" />
     <Compile Include="Sources\SortableQuestionSource.cs" />
+    <Compile Include="StackAPIComparer.cs" />
     <Compile Include="TieFighter.cs" />
     <Compile Include="UI\ImageBox.cs" />
     <Compile Include="UI\MouseEventHandler.cs" />

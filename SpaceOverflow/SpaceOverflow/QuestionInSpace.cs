@@ -1,16 +1,21 @@
 ﻿using Microsoft.Xna.Framework;
 using StackExchange;
-using Nuclex.Fonts;
+//using Nuclex.Fonts;
 
 namespace SpaceOverflow
 {
     public class QuestionInSpace 
     {
+        public QuestionInSpace() {
+            this.FadeFactor = 1f;
+        }
+
         public Question Question { get; set; }
         public Vector3 Position { get; set; }
         public float Scale { get; set; }
         public Vector2 TextSize { get; set; }
-        public Text Text { get; set; }
+        //public Text Text { get; set; }
+        public float FadeFactor; // { get; set; }
 
         public Vector3 TopLeft {
             get {
