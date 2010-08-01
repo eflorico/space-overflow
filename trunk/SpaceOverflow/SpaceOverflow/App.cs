@@ -60,15 +60,8 @@ namespace SpaceOverflow
         /// UnloadContent will be called once per game and is the place to unload
         /// all content.
         /// </summary>
-        protected override void UnloadContent()
-        {
+        protected override void UnloadContent() {
             this.AbortLoading();
-            this.SpriteBatch.Dispose();
-            this.SpaceBackground.Dispose();
-            this.ButtonBackground.Dispose();
-            this.ButtonEdge.Dispose();
-            this.ButtonSplit.Dispose();
-            this.ButtonIndicator.Dispose();
         }
     }
 
