@@ -26,8 +26,8 @@ namespace SpaceOverflow
         }
 
         private void CloseButton_Click(object sender, EventArgs e) {
-            this.WebBrowser.Navigate("about:blank");
             this.Hide();
+            this.WebBrowser.Navigate("about:blank");
         }
 
         private void WebBrowser_Navigated(object sender, WebBrowserNavigatedEventArgs e) {
